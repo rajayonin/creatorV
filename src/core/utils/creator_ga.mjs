@@ -17,17 +17,18 @@
  *  along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-"use strict";
+"use strict"
 /*
  * Google Analytics
  */
-var is_ga_initialize = false;
+var is_ga_initialize = false
 export function creator_ga(category, action, label) {
+    return // TODO: remove this
     if (typeof gtag !== "undefined") {
         gtag("event", label, {
             event_category: "creator_" + category,
             event_action: action,
             event_label: label,
-        });
+        })
     }
 }
