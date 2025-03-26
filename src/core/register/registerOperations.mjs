@@ -32,7 +32,9 @@ import { instructions } from "../compiler/compiler.mjs";
 import { updateDouble, updateSimple } from "./fpRegisterSync.mjs";
 import { creator_callstack_writeRegister } from "../sentinel/sentinel.mjs";
 import { console_log } from "../utils/creator_logger.mjs";
+import { btn_glow } from "@/web/utils.mjs";
 
+// eslint-disable-next-line max-lines-per-function
 export function readRegister(indexComp, indexElem, register_type) {
     var draw = {
         space: [],
@@ -109,6 +111,7 @@ export function readRegister(indexComp, indexElem, register_type) {
         }
     }
 }
+// eslint-disable-next-line max-lines-per-function
 export function writeRegister(value, indexComp, indexElem, register_type) {
     var draw = {
         space: [],
@@ -180,7 +183,7 @@ export function writeRegister(value, indexComp, indexElem, register_type) {
                 );
             }
 
-            //architecture.components[indexComp].elements[indexElem].value = parseFloat(value); //TODO: float2bin -> bin2hex -> hex2big_int //TODO
+            //architecture.components[indexComp].elements[indexElem].value = parseFloat(value); // TODO: float2bin -> bin2hex -> hex2big_int
             architecture.components[indexComp].elements[indexElem].value = bi_floatToBigInt(value);
             creator_callstack_writeRegister(indexComp, indexElem);
 

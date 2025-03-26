@@ -22,8 +22,16 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 }
 </style>
 <script>
-import PopoverInfo from "./PopoverInfo.vue"
-import { assembly_compile } from "@/core/core.mjs"
+import { useModal } from "bootstrap-vue-next"
+
+import { assembly_compile, set_execution_mode, status } from "@/core/core.mjs"
+import { instructions } from "@/core/compiler/compiler.mjs"
+import {
+  execute_instruction,
+  execution_index,
+} from "@/core/executor/executor.mjs"
+import { creator_ga } from "@/core/utils/creator_ga.mjs"
+import { show_notification } from "@/web/utils.mjs"
 
 export default {
   props: {
@@ -31,9 +39,15 @@ export default {
     browser: { type: String, required: true },
     architectures: { type: Array, required: true },
     assembly_code: String,
+    show_instruction_help: { type: Boolean, default: false },
   },
 
-  components: { PopoverInfo },
+  setup() {
+    // BV Composeables, such as this one, should only be used inside setup
+    const modalAssemblyError = useModal("modalAssemblyError")
+
+    return { modalAssemblyError }
+  },
 
   data() {
     return {
@@ -122,121 +136,114 @@ export default {
     },
 
     //Compile assembly code
-    // eslint-disable-next-line max-lines-per-function
     assembly_compiler() {
       //Change buttons status
       this.compiling = true
-      assembly_compile(this.assembly_code)
-      this.compiling = false
+      // assembly_compile(this.assembly_code)
+      // this.compiling = false
 
-      // promise = new Promise((resolve, _reject) => {
-      //   // eslint-disable-next-line max-lines-per-function
-      //   setTimeout(function () {
-      //     // Compile
-      //     if (typeof code !== "undefined") {
-      //       code_assembly = code
-      //     } else {
-      //       code_assembly = textarea_assembly_editor.getValue()
-      //     }
-      //     const ret = assembly_compiler()
+      setTimeout(() => {
+        // Compile
+        // if (typeof code !== "undefined") {
+        //   code_assembly = code
+        // } else {
+        //   code_assembly = textarea_assembly_editor.getValue()
+        // }
+        const ret = assembly_compile(this.assembly_code)
 
-      //     //Update/reset
-      //     app._data.totalStats = 0
-      //     app._data.instructions = instructions
-      //     tokenIndex = 0 //TODO: change to token_index in all files
-      //     uielto_toolbar_btngroup.methods.reset(true)
+        //TODO: Update/reset stats
+        // app._data.totalStats = 0
+        // app._data.instructions = instructions
+        // tokenIndex = 0 //TODO: change to token_index in all files
+        // uielto_toolbar_btngroup.methods.reset(true)
 
-      //     //Save a backup in the cache memory
-      //     if (typeof Storage !== "undefined") {
-      //       const aux_object = jQuery.extend(true, {}, architecture)
-      //       const aux_architecture = register_value_serialize(aux_object)
-      //       const aux_arch = JSON.stringify(aux_architecture, null, 2)
+        // TODO: Save a backup in the cache memory
+        // if (typeof Storage !== "undefined") {
+        //   const aux_object = jQuery.extend(true, {}, architecture)
+        //   const aux_architecture = register_value_serialize(aux_object)
+        //   const aux_arch = JSON.stringify(aux_architecture, null, 2)
 
-      //       const date = new Date()
-      //       const auxDate =
-      //         date.getHours() +
-      //         ":" +
-      //         date.getMinutes() +
-      //         ":" +
-      //         date.getSeconds() +
-      //         " - " +
-      //         date.getDate() +
-      //         "/" +
-      //         (date.getMonth() + 1) +
-      //         "/" +
-      //         date.getFullYear()
+        //   const date = new Date()
+        //   const auxDate =
+        //     date.getHours() +
+        //     ":" +
+        //     date.getMinutes() +
+        //     ":" +
+        //     date.getSeconds() +
+        //     " - " +
+        //     date.getDate() +
+        //     "/" +
+        //     (date.getMonth() + 1) +
+        //     "/" +
+        //     date.getFullYear()
 
-      //       localStorage.setItem(
-      //         "backup_arch_name",
-      //         app._data.architecture_name,
-      //       )
-      //       localStorage.setItem("backup_arch", aux_arch)
-      //       localStorage.setItem("backup_asm", code_assembly)
-      //       localStorage.setItem("backup_date", auxDate)
-      //     }
+        //   localStorage.setItem(
+        //     "backup_arch_name",
+        //     app._data.architecture_name,
+        //   )
+        //   localStorage.setItem("backup_arch", aux_arch)
+        //   localStorage.setItem("backup_asm", code_assembly)
+        //   localStorage.setItem("backup_date", auxDate)
+        // }
 
-      //     //show error/warning
+        //show error/warning
 
-      //     //Change buttons status
-      //     this.compiling = false
+        //Change buttons status
+        this.compiling = false
 
-      //     switch (ret.type) {
-      //       case "error":
-      //         uielto_toolbar_btngroup.methods.compile_error(
-      //           ret.msg,
-      //           ret.token,
-      //           ret.line,
-      //         )
-      //         break
+        switch (ret.type) {
+          case "error":
+            this.compile_error(ret.msg, ret.token, ret.line)
+            break
 
-      //       case "warning":
-      //         show_notification(ret.token, ret.bgcolor)
-      //         break
+          case "warning":
+            show_notification(ret.token, ret.bgcolor)
+            break
 
-      //       default:
-      //         show_notification("Compilation completed successfully", "success")
-      //         break
-      //     }
-
-      //     // end
-      //     resolve("0")
-      //   }, 25)
-      // })
+          default:
+            show_notification("Compilation completed successfully", "success")
+            this.change_UI_mode("simulator")
+            break
+        }
+      }, 25)
 
       // Close all toast
       // app.$bvToast.hide()
+
+      this.compiling = false
     },
 
-    //Show error message in the compilation
-    compile_error(msg, token, line) {
-      const code_assembly_segment = code_assembly.split("\n")
-      uielto_toolbar_btngroup.methods.change_UI_mode("assembly")
+    // Show error message in the compilation
+    compile_error(msg, _token, line) {
+      const code_assembly_segment = this.assembly_code.split("\n")
+      this.change_UI_mode("assembly")
 
-      setTimeout(function () {
-        app.$root.$emit("bv::show::modal", "modalAssemblyError")
+      // set compilation msg
 
-        // line 1
-        app.modalAssemblyError.line1 = ""
-        app.modalAssemblyError.code1 = ""
-        if (line > 0) {
-          app.modalAssemblyError.line1 = line
-          app.modalAssemblyError.code1 = code_assembly_segment[line - 1]
-        }
+      // line 1
+      this.$root.modalAssemblyError.line1 = ""
+      this.$root.modalAssemblyError.code1 = ""
+      if (line > 0) {
+        this.$root.modalAssemblyError.line1 = line
+        this.$root.modalAssemblyError.code1 = code_assembly_segment[line - 1]
+      }
 
-        // line 2
-        app.modalAssemblyError.line2 = line + 1
-        app.modalAssemblyError.code2 = code_assembly_segment[line]
+      // line 2
+      this.$root.modalAssemblyError.line2 = line + 1
+      this.$root.modalAssemblyError.code2 = code_assembly_segment[line]
 
-        // line 3
-        app.modalAssemblyError.line3 = ""
-        app.modalAssemblyError.code3 = ""
-        if (line < code_assembly_segment.length - 1) {
-          app.modalAssemblyError.line3 = line + 2
-          app.modalAssemblyError.code3 = code_assembly_segment[line + 1]
-        }
+      // line 3
+      this.$root.modalAssemblyError.line3 = ""
+      this.$root.modalAssemblyError.code3 = ""
+      if (line < code_assembly_segment.length - 1) {
+        this.$root.modalAssemblyError.line3 = line + 2
+        this.$root.modalAssemblyError.code3 = code_assembly_segment[line + 1]
+      }
 
-        app.modalAssemblyError.error = msg
-      }, 75)
+      this.$root.modalAssemblyError.error = msg
+
+      // show assembly error modal
+      this.modalAssemblyError.show()
     },
 
     //Remove a loaded binary
@@ -274,7 +281,7 @@ export default {
       }
 
       //Auto-scroll
-      if (app._data.autoscroll === true && run_program !== 1) {
+      if (this.$root.autoscroll && status.run_program !== 1) {
         if (execution_index >= 0 && execution_index + 4 < instructions.length) {
           const id =
             "#inst_table__row_" +
@@ -349,12 +356,12 @@ export default {
       app.$bvToast.hide()
     },
 
-    //Execute one instruction
+    // Execute one instruction
     execute_instruction() {
       // Google Analytics
       creator_ga("execute", "execute.instruction", "execute.instruction")
 
-      execution_mode = 0
+      set_execution_mode(0)
 
       const ret = execute_instruction()
 
@@ -366,9 +373,9 @@ export default {
         show_notification(ret.msg, ret.type)
       }
 
-      if (ret.draw !== null) {
-        this.execution_UI_update(ret)
-      }
+      // if (ret.draw !== null) {
+      //   this.execution_UI_update(ret)
+      // }
     },
 
     //Execute all program
@@ -380,27 +387,27 @@ export default {
 
       execution_mode = 1
 
-      if (run_program === 0) {
-        run_program = 1
+      if (status.run_program === 0) {
+        status.run_program = 1
       }
 
       if (instructions.length === 0) {
         show_notification("No instructions in memory", "danger")
-        run_program = 0
+        status.run_program = 0
         return
       }
       if (execution_index < -1) {
         show_notification("The program has finished", "warning")
-        run_program = 0
+        status.run_program = 0
         return
       }
       if (execution_index === -1) {
         show_notification("The program has finished with errors", "danger")
-        run_program = 0
+        status.run_program = 0
         return
       }
 
-      //Change buttons status
+      // Change buttons status
       this.reset_disable = true
       this.instruction_disable = true
       this.run_disable = true
@@ -414,9 +421,10 @@ export default {
     execute_program_packed(ret, local_this) {
       for (let i = 0; i < instructions_packed && execution_index >= 0; i++) {
         if (
-          run_program === 0 || // stop button pressed
-          run_program === 3 || // wait for user input at keyboard
-          (instructions[execution_index].Break === true && run_program !== 2) // stop because a breakpoint
+          status.run_program === 0 || // stop button pressed
+          status.run_program === 3 || // wait for user input at keyboard
+          (instructions[execution_index].Break === true &&
+            status.run_program !== 2) // stop because a breakpoint
         ) {
           local_this.execution_UI_update(ret)
 
@@ -428,19 +436,19 @@ export default {
           app._data.main_memory_busy = false
 
           if (instructions[execution_index].Break === true) {
-            run_program = 2 //In case breakpoint --> stop
+            status.run_program = 2 //In case breakpoint --> stop
           }
           return
         } else {
-          if (run_program === 2) {
-            run_program = 1
+          if (status.run_program === 2) {
+            status.run_program = 1
           }
 
           ret = execute_instruction()
 
           if (typeof ret === "undefined") {
             console.log("Something weird happened :-S")
-            run_program = 0
+            status.run_program = 0
 
             local_this.execution_UI_update(ret)
 
@@ -492,7 +500,7 @@ export default {
 
     //Stop program excution
     stop_execution() {
-      run_program = 0
+      status.run_program = 0
 
       //Change buttons status
       this.reset_disable = false
@@ -739,17 +747,52 @@ export default {
         </b-button>
 
         <!-- button_information -->
-        <b-button
-          v-if="item == 'btn_information'"
-          class="btn btn-block btn-outline-secondary btn-sm h-100 infoButton text-truncate"
-          id="info"
-        >
-          <font-awesome-icon icon="fa-info-circle" />
-          Info
-        </b-button>
 
-        <!-- Information popover -->
-        <PopoverInfo target="info" :show_instruction_help="true" />
+        <b-popover
+          v-if="item == 'btn_information'"
+          :click="true"
+          :close-on-hide="true"
+          :delay="{ show: 0, hide: 0 }"
+        >
+          <template #target>
+            <b-button
+              class="btn btn-block btn-outline-secondary btn-sm h-100 infoButton text-truncate"
+              id="info"
+            >
+              <font-awesome-icon icon="fa-info-circle" />
+              Info
+            </b-button>
+          </template>
+
+          <b-button
+            class="btn btn-outline-secondary btn-sm btn-block infoButton"
+            href="https://creatorsim.github.io/"
+            target="_blank"
+            onclick="creator_ga('send', 'event', 'help', 'help.general_help', 'help.general_help');"
+          >
+            <font-awesome-icon icon="fa-question-circle" />
+            Help
+          </b-button>
+
+          <b-button
+            class="btn btn-outline-secondary btn-block btn-sm h-100 infoButton"
+            v-if="show_instruction_help"
+            id="inst_ass"
+            v-b-toggle.sidebar_help
+            onclick="creator_ga('send', 'event', 'help', 'help.instruction_help', 'help.instruction_help');"
+          >
+            <font-awesome-icon icon="fa-book" />
+            Instruction Help
+          </b-button>
+
+          <b-button
+            class="btn btn-outline-secondary btn-sm btn-block buttonBackground h-100"
+            v-b-modal.notifications
+          >
+            <font-awesome-icon icon="fa-bell" />
+            Show Notifications
+          </b-button>
+        </b-popover>
       </span>
     </b-row>
   </b-container>

@@ -67,7 +67,7 @@ export function packExecute(error, err_msg, err_type, draw) {
 
     return ret
 }
-function execute_instruction() {
+export function execute_instruction() {
     var draw = {
         space: [],
         info: [],

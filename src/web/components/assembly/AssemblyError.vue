@@ -80,3 +80,10 @@ export default {
     <br />
   </b-modal>
 </template>
+
+<style lang="scss" scoped>
+.errorAssembly {
+  padding: 3%;
+  background: #ef9a9a;
+}
+</style>

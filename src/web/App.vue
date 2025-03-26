@@ -101,6 +101,7 @@ export default {
   name: "app",
   components: {
     BToastOrchestrator,
+    BModalOrchestrator,
     SpinnerLoading,
     SupportedBrowsers,
     FormConfiguration,
@@ -285,7 +286,7 @@ export default {
       //Assembly code
       //
 
-      assembly_code: "",
+      assembly_code: ".text\n\tmain: li t0, 1",
 
       /*************/
       /* Simulator */
@@ -485,6 +486,9 @@ export default {
   <!-- for showing toasts (notifications) from JS -->
   <BToastOrchestrator />
 
+  <!-- for showing modals from JS -->
+  <BModalOrchestrator />
+
   <!------------------------>
   <!-- General components -->
   <!------------------------>
@@ -576,6 +580,7 @@ export default {
     :arch_available="arch_available"
     :browser="browser"
     :assembly_code="assembly_code"
+    :modal_assembly_error="modalAssemblyError"
   />
 
   <!-------------------->
