@@ -22,7 +22,7 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 }
 </style>
 <script>
-import { useModal } from "bootstrap-vue-next"
+import { useModal, useToastController } from "bootstrap-vue-next"
 
 import { assembly_compile, set_execution_mode, status } from "@/core/core.mjs"
 import { instructions } from "@/core/compiler/compiler.mjs"
@@ -43,10 +43,11 @@ export default {
   },
 
   setup() {
-    // BV Composeables, such as this one, should only be used inside setup
+    // BV Composeables, such as these, should only be used inside setup
     const modalAssemblyError = useModal("modalAssemblyError")
+    const { show } = useToastController()
 
-    return { modalAssemblyError }
+    return { modalAssemblyError, show }
   },
 
   data() {
@@ -197,11 +198,15 @@ export default {
             break
 
           case "warning":
-            show_notification(ret.token, ret.bgcolor)
+            show_notification(ret.token, ret.bgcolor, this.show)
             break
 
           default:
-            show_notification("Compilation completed successfully", "success")
+            show_notification(
+              "Compilation completed successfully",
+              "success",
+              this.show,
+            )
             this.change_UI_mode("simulator")
             break
         }
@@ -305,13 +310,15 @@ export default {
         }
       }
 
-      if (app._data.data_mode === "stats") {
-        ApexCharts.exec("stat_plot", "updateSeries", stats_value)
-      }
+      // if (app._data.data_mode === "stats") {
+      //   ApexCharts.exec("stat_plot", "updateSeries", stats_value)
+      // }
 
-      if (app._data.data_mode === "clk_cycles") {
-        ApexCharts.exec("clk_plot", "updateSeries", clk_cycles_value)
-      }
+      // if (app._data.data_mode === "clk_cycles") {
+      //   ApexCharts.exec("clk_plot", "updateSeries", clk_cycles_value)
+      // }
+
+      // this.$root.$refs.simulatorView.$refs.registerFile.refresh() // refresh register file
     },
 
     // Reset execution
@@ -373,9 +380,9 @@ export default {
         show_notification(ret.msg, ret.type)
       }
 
-      // if (ret.draw !== null) {
-      //   this.execution_UI_update(ret)
-      // }
+      if (ret.draw !== null) {
+        this.execution_UI_update(ret)
+      }
     },
 
     //Execute all program

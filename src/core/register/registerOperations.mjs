@@ -32,7 +32,15 @@ import { instructions } from "../compiler/compiler.mjs";
 import { updateDouble, updateSimple } from "./fpRegisterSync.mjs";
 import { creator_callstack_writeRegister } from "../sentinel/sentinel.mjs";
 import { console_log } from "../utils/creator_logger.mjs";
-import { btn_glow } from "@/web/utils.mjs";
+
+
+function updateRegisterUI(indexComp, indexElem) {
+    const register_name = architecture.components[indexComp].elements[indexElem].name[0]
+
+    // this is ugly, but it's the only way (I found)
+    document.app.$root.$refs.simulatorView.$refs.registerFile.$refs[`reg${register_name}`][0].refresh()
+}
+
 
 // eslint-disable-next-line max-lines-per-function
 export function readRegister(indexComp, indexElem, register_type) {
@@ -160,9 +168,6 @@ export function writeRegister(value, indexComp, indexElem, register_type) {
             writeStackLimit(parseInt(bi_intToBigInt(value, 10)));
         }
 
-        if (typeof window !== "undefined") {
-            btn_glow(architecture.components[indexComp].elements[indexElem].name, "Int");
-        }
     } else if (architecture.components[indexComp].type == "fp_registers") {
         if (architecture.components[indexComp].double_precision === false) {
             if (architecture.components[indexComp].elements[indexElem].properties.includes("write") !== true) {
@@ -196,9 +201,6 @@ export function writeRegister(value, indexComp, indexElem, register_type) {
 
             updateDouble(indexComp, indexElem);
 
-            if (typeof window !== "undefined") {
-                btn_glow(architecture.components[indexComp].elements[indexElem].name, "FP");
-            }
         } else if (architecture.components[indexComp].double_precision === true) {
             if (architecture.components[indexComp].elements[indexElem].properties.includes("write") !== true) {
                 if (
@@ -235,10 +237,11 @@ export function writeRegister(value, indexComp, indexElem, register_type) {
             }
 
             creator_callstack_writeRegister(indexComp, indexElem);
-
-            if (typeof window !== "undefined") {
-                btn_glow(architecture.components[indexComp].elements[indexElem].name, "DFP");
-            }
         }
     }
+
+    if (typeof window !== "undefined") {
+        updateRegisterUI(indexComp, indexElem)
+    }
+
 }

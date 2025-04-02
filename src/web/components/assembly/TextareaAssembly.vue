@@ -64,6 +64,16 @@ export default {
     browser: { type: String, required: true },
     assembly_code: { type: String, required: true },
   },
+
+  setup() {
+    // this stuff HAS to be initialized here in `setup()`, or it doesn't do sh*t (it still doesn't work)
+    const lang = StreamLanguage.define(gas)
+
+    return {
+      lang,
+    }
+  },
+
   components: {
     PopoverShortcuts,
     Codemirror,
@@ -74,7 +84,6 @@ export default {
     return {
       vimActive: false,
       luisdaMode: false,
-      lang: StreamLanguage.define(gas), // doesn't work for some GOD DAMMED REASON
       extensions: [
         // A line number gutter
         lineNumbers(),
@@ -122,7 +131,6 @@ export default {
           // indent with tab
           // indentWithTab,
         ]),
-        // javascript({ typescript: false }),
       ],
     }
   },
