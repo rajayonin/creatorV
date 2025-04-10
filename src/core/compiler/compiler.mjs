@@ -1223,7 +1223,7 @@ export function assembly_compiler() {
         }
     }
 
-    if (typeof app != "undefined") app._data.instructions = instructions
+    if (typeof document.app != "undefined") document.app.$data.instructions = instructions
 
     /* Initialize stack */
     writeMemory("00", parseInt(stack_address), "word")
@@ -2837,8 +2837,8 @@ function code_segment_compiler() {
                 next_token()
                 token = get_token()
             } else if (token == architecture.directives[i].name) {
-                if (typeof app !== "undefined")
-                    app._data.instructions = instructions
+                if (typeof document.app !== "undefined")
+                    document.app.$data.instructions = instructions
 
                 console_log("token: " + token)
                 for (let i = 0; i < instructions.length; i++) {
@@ -3151,7 +3151,7 @@ function code_segment_compiler() {
     token = get_token()
     console_log("token: " + token)
 
-    if (typeof app !== "undefined") app._data.instructions = instructions
+    if (typeof document.app !== "undefined") document.app.$data.instructions = instructions
 
     for (let i = 0; i < instructions.length; i++) {
         if (instructions[i].Label != "") {

@@ -845,7 +845,7 @@ export function execute_instruction() {
         }
 
         // Refresh stats
-        stats_update(type)
+        // stats_update(type)
 
         // Refresh power consumption
         clk_cycles_update(type)
@@ -942,7 +942,7 @@ export function executeProgramOneShot(limit_n_instructions) {
     )
 }
 
-function reset() {
+export function reset() {
     // Google Analytics
     creator_ga("execute", "execute.reset")
 
@@ -951,7 +951,7 @@ function reset() {
     status.run_program = 0
 
     // Reset stats
-    stats_reset()
+    // stats_reset()
 
     //Power consumption reset
     clk_cycles_reset()
@@ -1149,8 +1149,8 @@ function stats_update(type) {
             stats_value[i]++
 
             status.totalStats++
-            if (typeof app !== "undefined") {
-                app._data.status.totalStats++
+            if (typeof document.app !== "undefined") {
+                document.app.$data.status.totalStats++
             }
         }
     }
@@ -1164,8 +1164,8 @@ function stats_update(type) {
 }
 function stats_reset() {
     status.totalStats = 0
-    if (typeof app !== "undefined") {
-        app._data.status.totalStats = 0
+    if (typeof document.app !== "undefined") {
+        document.app.$data.status.totalStats = 0
     }
 
     for (var i = 0; i < stats.length; i++) {
@@ -1209,8 +1209,8 @@ function clk_cycles_update(type) {
             clk_cycles_value[0].data[i]++
 
             total_clk_cycles++
-            if (typeof app !== "undefined") {
-                app._data.total_clk_cycles++
+            if (typeof document.app !== "undefined") {
+                document.app.$data.total_clk_cycles++
             }
         }
     }
@@ -1225,8 +1225,8 @@ function clk_cycles_update(type) {
 }
 function clk_cycles_reset() {
     total_clk_cycles = 0
-    if (typeof app !== "undefined") {
-        app._data.total_clk_cycles = 0
+    if (typeof document.app !== "undefined") {
+        document.app.$data.total_clk_cycles = 0
     }
 
     for (var i = 0; i < clk_cycles.length; i++) {
@@ -1242,7 +1242,7 @@ function clk_cycles_reset() {
 //Keyboard
 
 export function display_print(info) {
-    if (typeof app !== "undefined") app._data.display += info
+    if (typeof document.app !== "undefined") document.app.$data.display += info
     else process.stdout.write(info + "\n")
 
     status.display += info
@@ -1300,7 +1300,7 @@ export function keyboard_read(fn_post_read, fn_post_params) {
     }
 
     // CL
-    if (typeof app === "undefined") {
+    if (typeof document.app === "undefined") {
         var readlineSync = require("readline-sync")
         var keystroke = readlineSync.question(" > ")
 
@@ -1311,17 +1311,17 @@ export function keyboard_read(fn_post_read, fn_post_params) {
     }
 
     // UI
-    app._data.enter = false
+    document.app.$data.enter = false
 
     if (3 === status.run_program) {
         setTimeout(keyboard_read, 1000, fn_post_read, fn_post_params)
         return
     }
 
-    fn_post_read(app._data.keyboard, fn_post_params)
+    fn_post_read(document.app.$data.keyboard, fn_post_params)
 
-    app._data.keyboard = ""
-    app._data.enter = null
+    document.app.$data.keyboard = ""
+    document.app.$data.enter = null
 
     show_notification("The data has been uploaded", "info")
 

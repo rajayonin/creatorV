@@ -24,11 +24,19 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 <script>
 import { useModal, useToastController } from "bootstrap-vue-next"
 
-import { assembly_compile, set_execution_mode, status } from "@/core/core.mjs"
+import {
+  assembly_compile,
+  set_execution_mode,
+  architecture,
+  status,
+  instructions_packed,
+} from "@/core/core.mjs"
 import { instructions } from "@/core/compiler/compiler.mjs"
 import {
+  reset,
   execute_instruction,
   execution_index,
+  packExecute,
 } from "@/core/executor/executor.mjs"
 import { creator_ga } from "@/core/utils/creator_ga.mjs"
 import { show_notification } from "@/web/utils.mjs"
@@ -125,7 +133,7 @@ export default {
       uielto_preload_architecture.methods.load_arch_select(arch)
 
       //Close all toast and refresh
-      app.$bvToast.hide()
+      // app.$bvToast.hide()
     },
 
     //
@@ -133,7 +141,7 @@ export default {
     //
 
     new_assembly() {
-      textarea_assembly_editor.setValue("")
+      this.$root.assembly_code = ""
     },
 
     //Compile assembly code
@@ -318,7 +326,7 @@ export default {
       //   ApexCharts.exec("clk_plot", "updateSeries", clk_cycles_value)
       // }
 
-      // this.$root.$refs.simulatorView.$refs.registerFile.refresh() // refresh register file
+      this.$root.$refs.simulatorView.$refs.tableExecution.refresh() // refresh table execution
     },
 
     // Reset execution
@@ -336,9 +344,9 @@ export default {
       }
 
       // UI: reset I/O
-      app._data.keyboard = ""
-      app._data.display = ""
-      app._data.enter = null
+      this.$root.keyboard = ""
+      this.$root.display = ""
+      this.$root.enter = null
 
       reset(reset_graphic)
 
@@ -356,11 +364,10 @@ export default {
         }
       }
 
-      const ret = packExecute(false, null, null, draw)
-      this.execution_UI_update(ret)
+      this.execution_UI_update(packExecute(false, null, null, draw))
 
       // Close all toast
-      app.$bvToast.hide()
+      // app.$bvToast.hide()
     },
 
     // Execute one instruction
@@ -376,8 +383,8 @@ export default {
         console.log("Something weird happened :-S")
       }
 
-      if (ret.msg !== null) {
-        show_notification(ret.msg, ret.type)
+      if (ret.msg) {
+        show_notification(ret.msg, ret.type, this.show)
       }
 
       if (ret.draw !== null) {
@@ -392,24 +399,28 @@ export default {
       // Google Analytics
       creator_ga("execute", "execute.run", "execute.run")
 
-      execution_mode = 1
+      set_execution_mode(1)
 
       if (status.run_program === 0) {
         status.run_program = 1
       }
 
       if (instructions.length === 0) {
-        show_notification("No instructions in memory", "danger")
+        show_notification("No instructions in memory", "danger", this.show)
         status.run_program = 0
         return
       }
       if (execution_index < -1) {
-        show_notification("The program has finished", "warning")
+        show_notification("The program has finished", "warning", this.show)
         status.run_program = 0
         return
       }
       if (execution_index === -1) {
-        show_notification("The program has finished with errors", "danger")
+        show_notification(
+          "The program has finished with errors",
+          "danger",
+          this.show,
+        )
         status.run_program = 0
         return
       }
@@ -419,13 +430,13 @@ export default {
       this.instruction_disable = true
       this.run_disable = true
       this.stop_disable = false
-      app._data.main_memory_busy = true
+      this.$root.main_memory_busy = true
 
-      uielto_toolbar_btngroup.methods.execute_program_packed(ret, this)
+      this.execute_program_packed(ret, this)
     },
 
     // eslint-disable-next-line max-lines-per-function
-    execute_program_packed(ret, local_this) {
+    execute_program_packed(ret) {
       for (let i = 0; i < instructions_packed && execution_index >= 0; i++) {
         if (
           status.run_program === 0 || // stop button pressed
@@ -433,14 +444,14 @@ export default {
           (instructions[execution_index].Break === true &&
             status.run_program !== 2) // stop because a breakpoint
         ) {
-          local_this.execution_UI_update(ret)
+          this.execution_UI_update(ret)
 
           //Change buttons status
-          local_this.reset_disable = false
-          local_this.instruction_disable = false
-          local_this.run_disable = false
-          local_this.stop_disable = true
-          app._data.main_memory_busy = false
+          this.reset_disable = false
+          this.instruction_disable = false
+          this.run_disable = false
+          this.stop_disable = true
+          this.$root.main_memory_busy = false
 
           if (instructions[execution_index].Break === true) {
             status.run_program = 2 //In case breakpoint --> stop
@@ -457,48 +468,43 @@ export default {
             console.log("Something weird happened :-S")
             status.run_program = 0
 
-            local_this.execution_UI_update(ret)
+            this.execution_UI_update(ret)
 
             //Change buttons status
-            local_this.reset_disable = false
-            local_this.instruction_disable = false
-            local_this.run_disable = false
-            local_this.stop_disable = true
-            app._data.main_memory_busy = false
+            this.reset_disable = false
+            this.instruction_disable = false
+            this.run_disable = false
+            this.stop_disable = true
+            this.$root.main_memory_busy = false
 
             return
           }
 
           if (ret.msg !== null) {
-            show_notification(ret.msg, ret.type)
+            show_notification(ret.msg, ret.type, this.show)
 
-            local_this.execution_UI_update(ret)
+            this.execution_UI_update(ret)
 
             //Change buttons status
-            local_this.reset_disable = false
-            local_this.instruction_disable = false
-            local_this.run_disable = false
-            local_this.stop_disable = true
-            app._data.main_memory_busy = false
+            this.reset_disable = false
+            this.instruction_disable = false
+            this.run_disable = false
+            this.stop_disable = true
+            this.$root.main_memory_busy = false
           }
         }
       }
 
       if (execution_index >= 0) {
-        setTimeout(
-          uielto_toolbar_btngroup.methods.execute_program_packed,
-          15,
-          ret,
-          local_this,
-        )
+        setTimeout(this.execute_program_packed, 15, ret)
       } else {
-        local_this.execution_UI_update(ret)
+        this.execution_UI_update(ret)
         //Change buttons status
-        local_this.reset_disable = false
-        local_this.instruction_disable = false
-        local_this.run_disable = false
-        local_this.stop_disable = true
-        app._data.main_memory_busy = false
+        this.reset_disable = false
+        this.instruction_disable = false
+        this.run_disable = false
+        this.stop_disable = true
+        this.$root.main_memory_busy = false
       }
     },
 
@@ -514,7 +520,7 @@ export default {
       this.instruction_disable = false
       this.run_disable = false
       this.stop_disable = true
-      app._data.main_memory_busy = false
+      this.$root.main_memory_busy = false
     },
   },
 }

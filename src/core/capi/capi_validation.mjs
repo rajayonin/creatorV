@@ -23,7 +23,7 @@ import { app } from "../core.mjs";
 import { capi_uint2int } from "./capi_fp.mjs";
 
 export function capi_raise(msg) {
-    if (typeof app !== "undefined") {
+    if (typeof document.app !== "undefined") {
         app.exception(msg);
     } else {
         console.log(msg);
