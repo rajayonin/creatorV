@@ -180,7 +180,7 @@ export function creator_memory_alloc(new_size) {
 
     // new segment limit
     architecture.memory_layout[3].value = "0x" + (algn.new_addr + new_size).toString(16).padStart(8, "0").toUpperCase();
-    if (typeof app !== "undefined") {
+    if (typeof document.app !== "undefined") {
         app.architecture.memory_layout[3].value =
             "0x" + (algn.new_addr + new_size).toString(16).padStart(8, "0").toUpperCase();
     }

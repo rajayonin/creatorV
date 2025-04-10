@@ -26,14 +26,14 @@ import { main_memory_datatypes } from "./memoryCore.mjs";
 /************************
  * Public API (2/3): UI *
  ************************/
-// update an app._data.main_memory row:
+// update an document.app.$data.main_memory row:
 //  "000": { addr: 2003, addr_begin: "0x200", addr_end: "0x2003",
 //           hex:[{byte: "1A", tag: "main"},...],
 //           value: "1000", size: 4, eye: true, hex_packed: "1A000000" },
 //  ...
 export function creator_memory_updaterow(addr) {
     // skip if app.data does not exit...
-    if (typeof app == "undefined" || typeof app._data.main_memory == "undefined") {
+    if (typeof document.app == "undefined" || typeof document.app.$data.main_memory == "undefined") {
         return;
     }
 
@@ -43,12 +43,13 @@ export function creator_memory_updaterow(addr) {
 
     // get_or_create...
     var elto = { addr: 0, addr_begin: "", addr_end: "", value: "", size: 0, hex: [], eye: true };
-    if (typeof app._data.main_memory[addr_base] != "undefined") {
+    if (typeof document.app.$data.main_memory[addr_base] != "undefined") {
         // reuse the existing element...
-        elto = app._data.main_memory[addr_base];
+        elto = document.app.$data.main_memory[addr_base];
     } else {
         // set a new element, and set the initial values...
-        Vue.set(app._data.main_memory, addr_base, elto);
+        // Vue.set(document.app.$data.main_memory, addr_base, elto);
+        document.app.$data.main_memory[addr_base] = elto
 
         for (var i = 0; i < word_size_bytes; i++) {
             elto.hex[i] = { byte: "00", tag: null };
@@ -111,11 +112,11 @@ export function creator_memory_updaterow(addr) {
 
 export function creator_memory_updateall() {
     // skip if app.data does not exit...
-    if (typeof app == "undefined" || typeof app._data.main_memory == "undefined") {
+    if (typeof document.app == "undefined" || typeof document.app.$data.main_memory == "undefined") {
         return;
     }
 
-    // update all rows in app._data.main_memory...
+    // update all rows in document.app.$data.main_memory...
     var addrs = main_memory_get_addresses();
 
     var last_addr = -1;
@@ -131,20 +132,20 @@ export function creator_memory_updateall() {
 }
 export function creator_memory_clearall() {
     // skip if app.data does not exit...
-    if (typeof app == "undefined" || typeof app._data.main_memory == "undefined") {
+    if (typeof document.app == "undefined" || typeof document.app.$data.main_memory == "undefined") {
         return;
     }
 
     // clear all
-    app._data.main_memory = {};
+    document.app.$data.main_memory = {};
 }
 function creator_memory_update_row_view(selected_view, segment_name, row_info) {
-    if (typeof app._data.main_memory[row_info.addr] == "undefined") {
+    if (typeof document.app.$data.main_memory[row_info.addr] == "undefined") {
         return;
     }
 
-    var hex_packed = app._data.main_memory[row_info.addr].hex_packed;
-    var new_value = app._data.main_memory[row_info.addr].value;
+    var hex_packed = document.app.$data.main_memory[row_info.addr].hex_packed;
+    var new_value = document.app.$data.main_memory[row_info.addr].value;
 
     switch (selected_view) {
         case "sig_int":
@@ -161,7 +162,7 @@ function creator_memory_update_row_view(selected_view, segment_name, row_info) {
             break;
     }
 
-    app._data.main_memory[row_info.addr].value = new_value;
+    document.app.$data.main_memory[row_info.addr].value = new_value;
 }
 function creator_memory_update_space_view(selected_view, segment_name, row_info) {
     for (var i = 0; i < row_info.size; i++) {
