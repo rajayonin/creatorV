@@ -54,6 +54,8 @@ import {
     float2bin,
     hex2double,
 } from "../utils/utils.mjs"
+import { show_notification } from "@/web/utils.mjs"
+
 
 export var execution_index = 0
 
