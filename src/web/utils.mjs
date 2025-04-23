@@ -18,8 +18,6 @@
  *
  */
 
-import { status } from "@/core/core.mjs"
-
 import $ from "jquery"
 
 /*Stop the transmission of events to children*/
@@ -37,6 +35,7 @@ export function console_log(m) {
     }
 }
 
+// eslint-disable-next-line prefer-const
 export let notifications = []
 
 /**
@@ -47,17 +46,16 @@ export let notifications = []
  * @param {(obj: ToastOrchestratorShowParam) => ControllerKey, null} showToast - Toast controller's `show` function, obtained from `const { show } = useToastController()` inside a Component's `setup` function.
  *
  */
-export function show_notification(msg, type, showToast) {
+export function show_notification(msg, type) {
     // show notification
-    showToast?.({
+    document.app.showToast({
         props: {
-            title: "",
+            title: " ",  // TODO: use fontawesome icons here
             body: msg,
             variant: type,
-            // solid: true,
             pos: "top-center",
-            // delay: document.app.$data.notificationTime,  // TODO: route this
-            autoHide: type !== "danger",  // TODO: this is not working
+            value: document.app.$data.notification_time,
+            // TODO: don't dismiss toast when type is danger
         }
     })
 

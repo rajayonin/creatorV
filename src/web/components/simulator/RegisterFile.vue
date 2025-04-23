@@ -56,14 +56,16 @@ export default {
         { text: "Alias", value: "alias" },
         { text: "All", value: "all" },
       ],
+
+      render: 0n, // dummy variable to force components with this as key to refresh
     }
   },
 
   methods: {
-    // refresh() {
-    //   // refreshes the component
-    //   this.render++
-    // },
+    refresh() {
+      // refreshes children components with `:key="render"`
+      this.render++
+    },
 
     mk_reg_representation_options() {
       if (
@@ -176,6 +178,7 @@ export default {
                   :name_representation="reg_name_representation"
                   :value_representation="reg_representation"
                   :ref="'reg' + register.name[0]"
+                  :key="render"
                 />
               </b-col>
             </b-row>

@@ -59,7 +59,8 @@ export let register_size_bits = 32
 export const status = {
     execution_init: 1,
     totalStats: 0,
-    run_program: 0,
+    run_program: 0,  // 0: stopped, 1: running, 2: stopped-by-breakpoint, 3: stopped-by-mutex-read
+
     keyboard: "",
     display: "",
 }

@@ -1251,28 +1251,49 @@ export function display_print(info) {
 }
 
 export function kbd_read_char(keystroke, params) {
-    var value = keystroke.charCodeAt(0)
+    const value = keystroke.charCodeAt(0)
     writeRegister(value, params.indexComp, params.indexElem)
-
     return value
 }
 
 export function kbd_read_int(keystroke, params) {
-    var value = parseInt(keystroke)
+    // eslint-disable-next-line radix
+    const value = parseInt(keystroke)
+
+    // validate input
+    if (typeof document.app !== "undefined" && isNaN(value)) {
+        show_notification(`Invalid input: '${keystroke}' is not an integer`, "danger")
+        return null
+    }
+
     writeRegister(value, params.indexComp, params.indexElem)
 
     return value
 }
 
 export function kbd_read_float(keystroke, params) {
-    var value = parseFloat(keystroke, 10)
+    const value = parseFloat(keystroke, 10)
+
+    // validate input
+    if (typeof document.app !== "undefined" && isNaN(value)) {
+        show_notification(`Invalid input: '${keystroke}' is not a float`, "danger", useToastController)
+        return null
+    }
+
     writeRegister(value, params.indexComp, params.indexElem, "SFP-Reg")
 
     return value
 }
 
 export function kbd_read_double(keystroke, params) {
-    var value = parseFloat(keystroke, 10)
+    const value = parseFloat(keystroke, 10)
+
+    // validate input
+    if (typeof document.app !== "undefined" && isNaN(value)) {
+        show_notification(`Invalid input: '${keystroke}' is not a double`, "danger", useToastController)
+        return null
+    }
+
     writeRegister(value, params.indexComp, params.indexElem, "DFP-Reg")
 
     return value
@@ -1315,20 +1336,28 @@ export function keyboard_read(fn_post_read, fn_post_params) {
     // UI
     document.app.$data.enter = false
 
-    if (3 === status.run_program) {
+    if (status.run_program === 3) {
         setTimeout(keyboard_read, 1000, fn_post_read, fn_post_params)
         return
     }
 
-    fn_post_read(document.app.$data.keyboard, fn_post_params)
+    const val = fn_post_read(document.app.$data.keyboard, fn_post_params)
 
-    document.app.$data.keyboard = ""
-    document.app.$data.enter = null
+    document.app.$data.keyboard = ""  // clear input
+
+    if (val === null) {
+        // error parsing input, retry
+        status.run_program = 3
+        return keyboard_read(fn_post_read, fn_post_params)
+    }
 
     show_notification("The data has been uploaded", "info")
 
+    document.app.$data.enter = null
+
+
     if (execution_index >= instructions.length) {
-        for (var i = 0; i < instructions.length; i++) {
+        for (let i = 0; i < instructions.length; i++) {
             draw.space.push(i)
         }
 

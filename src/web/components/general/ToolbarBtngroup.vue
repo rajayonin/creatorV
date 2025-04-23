@@ -22,7 +22,7 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 }
 </style>
 <script>
-import { useModal, useToastController } from "bootstrap-vue-next"
+import { useModal } from "bootstrap-vue-next"
 
 import {
   assembly_compile,
@@ -53,9 +53,8 @@ export default {
   setup() {
     // BV Composeables, such as these, should only be used inside setup
     const modalAssemblyError = useModal("modalAssemblyError")
-    const { show } = useToastController()
 
-    return { modalAssemblyError, show }
+    return { modalAssemblyError }
   },
 
   data() {
@@ -71,6 +70,26 @@ export default {
     arch_available() {
       return this.architectures.filter(item => item.available === 1)
     },
+  },
+
+  mounted() {
+    if (this.$root.creator_mode === "simulator") {
+      // update UI on simulator entry, to put labels
+      this.execution_UI_reset()
+
+      // enable execution buttons only if there are instructions to execute
+      const prepared_for_execution = this.$root.instructions.length > 0
+
+      if (this.group.includes("btn_run")) {
+        this.run_disable = !prepared_for_execution
+      }
+      if (this.group.includes("btn_reset")) {
+        this.reset_disable = !prepared_for_execution
+      }
+      if (this.group.includes("btn_instruction")) {
+        this.instruction_disable = !prepared_for_execution
+      }
+    }
   },
 
   methods: {
@@ -206,15 +225,11 @@ export default {
             break
 
           case "warning":
-            show_notification(ret.token, ret.bgcolor, this.show)
+            show_notification(ret.token, ret.bgcolor)
             break
 
           default:
-            show_notification(
-              "Compilation completed successfully",
-              "success",
-              this.show,
-            )
+            show_notification("Compilation completed successfully", "success")
             this.change_UI_mode("simulator")
             break
         }
@@ -224,6 +239,8 @@ export default {
       // app.$bvToast.hide()
 
       this.compiling = false
+
+      // enable execution buttons
     },
 
     // Show error message in the compilation
@@ -272,6 +289,21 @@ export default {
     // Simulator actions
     //
 
+    /**
+     * Updates the execution table UI, according to the return value of an execution.
+     * @param {Object} ret {
+     *                   error: Boolean,
+     *                   msg: String | null,
+     *                   type: String | null,
+     *                   draw: {
+     *                     space: Array,
+     *                     info: Array,
+     *                     success: Array,
+     *                     warning: Array,
+     *                     danger: Array
+     *                   }
+     *                 }
+     */
     execution_UI_update(ret) {
       if (typeof ret === "undefined") {
         return
@@ -329,11 +361,10 @@ export default {
       this.$root.$refs.simulatorView.$refs.tableExecution.refresh() // refresh table execution
     },
 
-    // Reset execution
-    reset(reset_graphic) {
-      // Google Analytics
-      creator_ga("execute", "execute.reset", "execute.reset")
-
+    /**
+     * Resets the execution table's UI
+     */
+    execution_UI_reset() {
       const draw = {
         space: [],
         info: [],
@@ -343,19 +374,9 @@ export default {
         flash: [],
       }
 
-      // UI: reset I/O
-      this.$root.keyboard = ""
-      this.$root.display = ""
-      this.$root.enter = null
-
-      reset(reset_graphic)
-
       for (let i = 0; i < instructions.length; i++) {
         draw.space.push(i)
       }
-
-      draw.success = []
-      draw.info = []
 
       // UI: set default row color...
       for (let i = 0; i < instructions.length; i++) {
@@ -365,6 +386,23 @@ export default {
       }
 
       this.execution_UI_update(packExecute(false, null, null, draw))
+    },
+
+    // Reset execution
+    reset(reset_graphic) {
+      // Google Analytics
+      creator_ga("execute", "execute.reset", "execute.reset")
+
+      // UI: reset I/O
+      this.$root.keyboard = ""
+      this.$root.display = ""
+      this.$root.enter = null
+
+      reset(reset_graphic)
+
+      this.execution_UI_reset()
+
+      this.$root.$refs.simulatorView.$refs.registerFile.refresh() // refresh table execution
 
       // Close all toast
       // app.$bvToast.hide()
@@ -384,7 +422,7 @@ export default {
       }
 
       if (ret.msg) {
-        show_notification(ret.msg, ret.type, this.show)
+        show_notification(ret.msg, ret.type)
       }
 
       if (ret.draw !== null) {
@@ -406,21 +444,17 @@ export default {
       }
 
       if (instructions.length === 0) {
-        show_notification("No instructions in memory", "danger", this.show)
+        show_notification("No instructions in memory", "danger")
         status.run_program = 0
         return
       }
       if (execution_index < -1) {
-        show_notification("The program has finished", "warning", this.show)
+        show_notification("The program has finished", "warning")
         status.run_program = 0
         return
       }
       if (execution_index === -1) {
-        show_notification(
-          "The program has finished with errors",
-          "danger",
-          this.show,
-        )
+        show_notification("The program has finished with errors", "danger")
         status.run_program = 0
         return
       }
@@ -481,7 +515,7 @@ export default {
           }
 
           if (ret.msg !== null) {
-            show_notification(ret.msg, ret.type, this.show)
+            show_notification(ret.msg, ret.type)
 
             this.execution_UI_update(ret)
 
