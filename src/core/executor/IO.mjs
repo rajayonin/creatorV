@@ -48,14 +48,29 @@ export function kbd_read_char(keystroke, params) {
 }
 
 export function kbd_read_int(keystroke, params) {
-    const value = parseInt(keystroke, 10);
+    // eslint-disable-next-line radix
+    const value = parseInt(keystroke)
+
+    // validate input
+    if (typeof document !== "undefined" && isNaN(value)) {
+        show_notification(`Invalid input: '${keystroke}' is not an integer`, "danger")
+        return null
+    }
+
     writeRegister(value, params.indexComp, params.indexElem);
 
     return value;
 }
 
 export function kbd_read_float(keystroke, params) {
-    const value = parseFloat(keystroke, 10);
+    const value = parseFloat(keystroke, 10)
+
+    // validate input
+    if (typeof document !== "undefined" && isNaN(value)) {
+        show_notification(`Invalid input: '${keystroke}' is not a float`, "danger", useToastController)
+        return null
+    }
+
     writeRegister(value, params.indexComp, params.indexElem, "SFP-Reg");
 
     return value;
@@ -63,6 +78,13 @@ export function kbd_read_float(keystroke, params) {
 
 export function kbd_read_double(keystroke, params) {
     const value = parseFloat(keystroke, 10);
+
+    // validate input
+    if (typeof document.app !== "undefined" && isNaN(value)) {
+        show_notification(`Invalid input: '${keystroke}' is not a double`, "danger", useToastController)
+        return null
+    }
+
     writeRegister(value, params.indexComp, params.indexElem, "DFP-Reg");
 
     return value;
@@ -157,17 +179,24 @@ export function keyboard_read(fn_post_read, fn_post_params) {
     }
 
     // Web/UI mode
-    app._data.enter = false;
+    document.app.$data.enter = false;
 
     if (status.run_program === 3) {
         setTimeout(keyboard_read, 1000, fn_post_read, fn_post_params);
         return;
     }
 
-    fn_post_read(app._data.keyboard, fn_post_params);
+    const val = fn_post_read(app._data.keyboard, fn_post_params);
 
-    app._data.keyboard = "";
-    app._data.enter = null;
+    document.app.$data.keyboard = ""  // clear input
+
+    if (val === null) {
+        // error parsing input, retry
+        status.run_program = 3
+        return keyboard_read(fn_post_read, fn_post_params)
+    }
+
+    document.app.$data.enter = null;
 
     show_notification("The data has been uploaded", "info");
 
