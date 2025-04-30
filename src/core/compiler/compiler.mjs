@@ -405,6 +405,7 @@ export function assembly_compiler() {
     extern = []
     data = []
     status.execution_init = 1
+    tokenIndex = 0
 
     pc = 4
 
