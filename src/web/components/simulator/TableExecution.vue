@@ -21,7 +21,6 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 import { status } from "@/core/core.mjs"
 import { execution_index } from "@/core/executor/executor.mjs"
 import { creator_ga } from "@/core/utils/creator_ga.mjs"
-import { onUpdated } from "vue"
 
 export default {
   props: {
@@ -63,9 +62,8 @@ export default {
         }
       }
 
-      if (instructions[index].Break === null) {
-        instructions[index].Break = true
-        app._data.instructions[index].Break = true //TODO: vue bidirectional updates
+      if (this.instructions[index].Break === null) {
+        this.$root.instructions[index].Break = true
 
         /* Google Analytics */
         creator_ga(
@@ -75,9 +73,8 @@ export default {
           "execute.breakpoint",
           "execute.breakpoint",
         )
-      } else if (instructions[index].Break === true) {
-        instructions[index].Break = null
-        app._data.instructions[index].Break = null //TODO: vue bidirectional updates
+      } else if (this.instructions[index].Break) {
+        this.$root.instructions[index].Break = null
       }
     },
   },
