@@ -27,11 +27,9 @@ import { useModal } from "bootstrap-vue-next"
 import {
   assembly_compile,
   set_execution_mode,
-  architecture,
   status,
   instructions_packed,
 } from "@/core/core.mjs"
-import { instructions } from "@/core/compiler/compiler.mjs"
 import {
   reset,
   execute_instruction,
@@ -44,6 +42,7 @@ import { show_notification } from "@/web/utils.mjs"
 export default {
   props: {
     group: { type: Array, required: true },
+    instructions: Array,
     browser: { type: String, required: true },
     architectures: { type: Array, required: true },
     assembly_code: String,
@@ -69,6 +68,15 @@ export default {
   computed: {
     arch_available() {
       return this.architectures.filter(item => item.available === 1)
+    },
+
+    instruction_values: {
+      get() {
+        return this.instructions
+      },
+      set(value) {
+        instructions = value
+      },
     },
   },
 
@@ -305,60 +313,66 @@ export default {
      *                 }
      */
     execution_UI_update(ret) {
-      if (typeof ret === "undefined") {
+      if (ret === undefined) {
         return
       }
 
+      // update execution table instruction colors
       for (let i = 0; i < ret.draw.space.length; i++) {
-        instructions[ret.draw.space[i]]._rowVariant = ""
+        this.instruction_values[ret.draw.space[i]]._rowVariant = ""
       }
       for (let i = 0; i < ret.draw.success.length; i++) {
-        instructions[ret.draw.success[i]]._rowVariant = "success"
+        this.instruction_values[ret.draw.success[i]]._rowVariant = "success"
       }
       for (let i = 0; i < ret.draw.info.length; i++) {
-        instructions[ret.draw.info[i]]._rowVariant = "info"
+        this.instruction_values[ret.draw.info[i]]._rowVariant = "info"
       }
       for (let i = 0; i < ret.draw.warning.length; i++) {
-        instructions[ret.draw.warning[i]]._rowVariant = "warning"
+        this.instruction_values[ret.draw.warning[i]]._rowVariant = "warning"
       }
       for (let i = 0; i < ret.draw.danger.length; i++) {
-        instructions[ret.draw.danger[i]]._rowVariant = "danger"
+        this.instruction_values[ret.draw.danger[i]]._rowVariant = "danger"
       }
 
-      //Auto-scroll
-      if (this.$root.autoscroll && status.run_program !== 1) {
-        if (execution_index >= 0 && execution_index + 4 < instructions.length) {
-          const id =
-            "#inst_table__row_" +
-            instructions[
-              execution_index +
-                parseInt(architecture.arch_conf[1].value, 10) / 8
-            ].Address
-          const row_pos = $(id).position()
-          if (row_pos) {
-            const pos = row_pos.top - $(".instructions_table").height()
-            $(".instructions_table").animate({ scrollTop: pos }, 200)
-          }
-        } else if (
-          execution_index > 0 &&
-          execution_index + 4 >= instructions.length
+      // Auto-scroll
+
+      if (
+        this.$root.autoscroll &&
+        status.run_program !== 1 &&
+        this.instructions.length > 0
+      ) {
+        // scroll to next instruction
+
+        if (
+          execution_index >= 0 &&
+          execution_index < this.instructions.length
         ) {
+          let row = execution_index + 1 // next instruction
+          if (execution_index + 1 === this.instructions.length) {
+            // last instruction, use current instruction instead
+            row = execution_index
+          }
+
+          const row_pos = $(
+            "#inst_table__row_" + this.instructions[row].Address,
+          ).position()
+
+          if (row_pos) {
+            $(".instructions_table").animate(
+              {
+                scrollTop: row_pos.top - $(".instructions_table").height() / 2,
+              },
+              300,
+            )
+          }
+        } else {
+          // scroll to top
           $(".instructions_table").animate(
             { scrollTop: $(".instructions_table").height() },
             300,
           )
         }
       }
-
-      // if (app._data.data_mode === "stats") {
-      //   ApexCharts.exec("stat_plot", "updateSeries", stats_value)
-      // }
-
-      // if (app._data.data_mode === "clk_cycles") {
-      //   ApexCharts.exec("clk_plot", "updateSeries", clk_cycles_value)
-      // }
-
-      this.$root.$refs.simulatorView.$refs.tableExecution.refresh() // refresh table execution
     },
 
     /**
@@ -374,13 +388,13 @@ export default {
         flash: [],
       }
 
-      for (let i = 0; i < instructions.length; i++) {
+      for (let i = 0; i < this.instructions.length; i++) {
         draw.space.push(i)
       }
 
       // UI: set default row color...
-      for (let i = 0; i < instructions.length; i++) {
-        if (instructions[i].Label === "main") {
+      for (let i = 0; i < this.instructions.length; i++) {
+        if (this.instructions[i].Label === "main") {
           draw.success.push(i)
         }
       }
@@ -443,7 +457,7 @@ export default {
         status.run_program = 1
       }
 
-      if (instructions.length === 0) {
+      if (this.instructions.length === 0) {
         show_notification("No instructions in memory", "danger")
         status.run_program = 0
         return
@@ -475,7 +489,7 @@ export default {
         if (
           status.run_program === 0 || // stop button pressed
           status.run_program === 3 || // wait for user input at keyboard
-          (instructions[execution_index].Break === true &&
+          (this.instructions[execution_index].Break === true &&
             status.run_program !== 2) // stop because a breakpoint
         ) {
           this.execution_UI_update(ret)
@@ -487,7 +501,7 @@ export default {
           this.stop_disable = true
           this.$root.main_memory_busy = false
 
-          if (instructions[execution_index].Break === true) {
+          if (this.instructions[execution_index].Break === true) {
             status.run_program = 2 //In case breakpoint --> stop
           }
           return
