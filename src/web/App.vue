@@ -232,6 +232,11 @@ export default {
         return a === null ? null : a === "true"
       })(localStorage.getItem("conf_dark_mode")), // if null (no localStorage), set to null, else cast to bool
 
+      vim_mode: localStorage.getItem("conf_vim_mode") === "true",
+
+      vim_custom_keybinds:
+        JSON.parse(localStorage.getItem("conf_vim_custom_keybinds")) || [],
+
       /*************************/
       /* Architecture Selector */
       /*************************/
@@ -517,7 +522,6 @@ export default {
     />
 
     <!-- Configuration modal -->
-    <!-- TODO: for some FRICKING reason these v-models don't sync -->
     <FormConfiguration
       id="configuration"
       v-model:arch_available="arch_available"
@@ -528,6 +532,8 @@ export default {
       v-model:notification_time="notification_time"
       v-model:dark="dark"
       v-model:c_debug="c_debug"
+      v-model:vim_custom_keybinds="vim_custom_keybinds"
+      v-model:vim_mode="vim_mode"
     />
 
     <!-- Information modals -->
@@ -591,6 +597,7 @@ export default {
     :browser="browser"
     :assembly_code="assembly_code"
     :modal_assembly_error="modalAssemblyError"
+    :vim_mode="vim_mode"
   />
 
   <!-------------------->

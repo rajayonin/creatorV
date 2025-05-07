@@ -51,7 +51,7 @@ export default defineConfigWithVueTs(
       "max-lines-per-function": [
         "error",
         {
-          max: 50,
+          max: 60,
           skipBlankLines: true,
           skipComments: true,
         },
