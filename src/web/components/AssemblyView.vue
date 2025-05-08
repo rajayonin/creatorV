@@ -46,6 +46,7 @@ export default {
           :arch_available="arch_available"
           :assembly_code="assembly_code"
           :show_instruction_help="true"
+          ref="toolbar"
         />
 
         <!-- Assembly navbar modals -->

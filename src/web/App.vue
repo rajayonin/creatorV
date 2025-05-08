@@ -598,6 +598,7 @@ export default {
     :assembly_code="assembly_code"
     :modal_assembly_error="modalAssemblyError"
     :vim_mode="vim_mode"
+    ref="assemblyView"
   />
 
   <!-------------------->
