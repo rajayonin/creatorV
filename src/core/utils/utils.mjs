@@ -240,7 +240,7 @@ export function hex2double(hexvalue) {
 function float2int_v2(value) {
     return parseInt(float2bin(value), 2);
 }
-function double2int_v2(value) {
+export function double2int_v2(value) {
     return parseInt(double2bin(value), 2);
 }
 function int2float_v2(value) {

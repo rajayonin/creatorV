@@ -24,12 +24,15 @@ import AssemblyError from "./assembly/AssemblyError.vue"
 export default {
   props: {
     browser: String,
+    os: { type: String, required: true },
     arch_available: Array,
     architecture_name: String,
     assembly_code: String,
     modal_assembly_error: Object,
     vim_mode: { type: Boolean, required: true },
+    vim_custom_keybinds: { type: Array, required: true },
   },
+
   components: { UIeltoToolbar, TextareaAssembly, AssemblyError },
 }
 </script>
@@ -43,6 +46,7 @@ export default {
           id="navbar_assembly"
           components="btn_architecture,btn_simulator|btn_compile|dropdown_assembly_file,dropdown_library|btn_configuration,btn_information"
           :browser="browser"
+          :os="os"
           :arch_available="arch_available"
           :assembly_code="assembly_code"
           :show_instruction_help="true"
@@ -84,6 +88,7 @@ export default {
           :browser="browser"
           :assembly_code="assembly_code"
           :vim_mode="vim_mode"
+          :vim_custom_keybinds="vim_custom_keybinds"
         />
         <!-- </b-col>
 

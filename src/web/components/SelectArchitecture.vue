@@ -4,11 +4,13 @@ import PreloadArchitecture from "./select_architecture/PreloadArchitecture.vue"
 import LoadArchitecture from "./select_architecture/LoadArchitecture.vue"
 import NewArchitecture from "./select_architecture/NewArchitecture.vue"
 import DeleteArchitecture from "./select_architecture/DeleteArchitecture.vue"
+import LoadArchitecture from "./select_architecture/LoadArchitecture.vue"
 
 export default {
   props: {
     arch_available: Array,
     browser: String,
+    os: { type: String, required: true },
   },
   emits: ["select-architecture"], // PreloadArchitecture's event, we just pass it to our parent
   components: {
@@ -36,6 +38,7 @@ export default {
           id="navbar_load_architecture"
           :components="' | | |btn_configuration,btn_information'"
           :browser="browser"
+          :os="os"
           :arch_available="arch_available"
         />
 

@@ -29,7 +29,7 @@ export default {
 
 <template>
   <b-modal :id="id" title="Assembly Code Error" :ref="reff" no-footer size="lg">
-    <span class="h6 font-weight-light">Code fragment:</span>
+    <span class="h6 fw-light">Code fragment:</span>
 
     <div class="errorAssembly">
       <span class="h6 text-monospace" label="Code fragment:">
@@ -74,7 +74,7 @@ export default {
     </div>
     <br />
 
-    <span class="h6 font-weight-light">Error description:</span>
+    <span class="h6 fw-light">Error description:</span>
     <br />
     <span class="h6">{{ modal_assembly_error.error }}</span>
     <br />
