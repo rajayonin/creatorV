@@ -1,7 +1,6 @@
 <script>
 import UIeltoToolbar from "./general/UIeltoToolbar.vue"
 import PreloadArchitecture from "./select_architecture/PreloadArchitecture.vue"
-import LoadArchitecture from "./select_architecture/LoadArchitecture.vue"
 import NewArchitecture from "./select_architecture/NewArchitecture.vue"
 import DeleteArchitecture from "./select_architecture/DeleteArchitecture.vue"
 import LoadArchitecture from "./select_architecture/LoadArchitecture.vue"
