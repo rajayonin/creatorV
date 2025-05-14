@@ -405,7 +405,7 @@ export default {
       return null
     },
 
-    //Verify if dark mode was activated from cache
+    // Verify if dark mode was activated from cache
     set_dark_mode() {
       if (this.dark === null) {
         // detect prefered color scheme
@@ -416,13 +416,17 @@ export default {
         }
       }
 
-      // set dark mode
-      if (this.dark) {
-        document.getElementsByTagName("body")[0].style =
-          "filter: invert(88%) hue-rotate(160deg) !important; background-color: #111 !important;"
-      } else {
-        document.getElementsByTagName("body")[0].style = ""
-      }
+      // set dark mode (w/ bootstrap color themes)
+      document.documentElement.setAttribute(
+        "data-bs-theme",
+        this.dark ? "dark" : "light",
+      )
+      // if (this.dark) {
+      //   document.getElementsByTagName("body")[0].style =
+      //     "filter: invert(88%) hue-rotate(160deg) !important; background-color: #111 !important;"
+      // } else {
+      //   document.getElementsByTagName("body")[0].style = ""
+      // }
     },
 
     /*************/
@@ -558,6 +562,7 @@ export default {
     :modal_assembly_error="modalAssemblyError"
     :vim_mode="vim_mode"
     :vim_custom_keybinds="vim_custom_keybinds"
+    :dark="dark"
     ref="assemblyView"
   />
 
@@ -581,6 +586,7 @@ export default {
     :main_memory_busy="main_memory_busy"
     :display="display"
     :keyboard="keyboard"
+    :dark="dark"
     ref="simulatorView"
   />
 
