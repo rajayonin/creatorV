@@ -172,6 +172,7 @@ export var example_set_available = []
 export var example_available = []
 /*Instructions memory*/
 export var instructions = []
+export function clear_instructions() { instructions = [] }
 var instructions_tag = []
 export var tag_instructions = {}
 var instructions_binary = []
@@ -1151,11 +1152,11 @@ export function assembly_compiler() {
               extern = [];
               creator_memory_clear() ;
               data = [];
-  
+
               return packCompileError('m0', 'Data overflow', 'warning', "danger") ;
             }
           }
-  
+
           if (memory[memory_hash[1]].length > 0)
           {
             if(memory[memory_hash[1]][memory[memory_hash[1]].length-1].Binary[3].Addr > architecture.memory_layout[1].value){
@@ -1169,7 +1170,7 @@ export function assembly_compiler() {
               extern = [];
               creator_memory_clear() ;
               data = [];
-  
+
               return packCompileError('m0', 'Instruction overflow', 'warning', "danger");
             }
           }

@@ -49,6 +49,9 @@ export default {
       show_loading()
       // load file
 
+      // TODO: use Fetch API instead of jquery:
+      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+
       //Synchronous JSON read
       $.ajaxSetup({
         async: false,
@@ -56,6 +59,18 @@ export default {
 
       $.getJSON("architecture/" + arch.file + ".json", cfg => {
         load_arch_select(cfg)
+
+        // store code to be edited
+        // TODO: change this when migration w/ new core, we'll use YAMLs
+        this.$root.arch_code = JSON.stringify(
+          cfg,
+          // serialize BigInts
+          (_key, value) =>
+            typeof value === "bigint"
+              ? Number(value) // FIXME: this is BAD
+              : value, // return everything else unchanged
+          2,
+        )
 
         //Refresh UI
         show_notification(
