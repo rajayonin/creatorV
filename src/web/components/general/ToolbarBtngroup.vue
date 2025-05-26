@@ -43,7 +43,6 @@ export default {
     browser: { type: String, required: true },
     os: { type: String, required: true },
     architectures: { type: Array, required: true },
-    assembly_code: String,
     show_instruction_help: { type: Boolean, default: false },
   },
 
@@ -205,7 +204,7 @@ export default {
         // } else {
         //   code_assembly = textarea_assembly_editor.getValue()
         // }
-        const ret = assembly_compile(this.assembly_code)
+        const ret = assembly_compile(this.$root.assembly_code)
 
         //TODO: Update/reset stats
         // app._data.totalStats = 0
@@ -272,7 +271,7 @@ export default {
 
     // Show error message in the compilation
     compile_error(msg, _token, line) {
-      const code_assembly_segment = this.assembly_code.split("\n")
+      const code_assembly_segment = this.$root.assembly_code.split("\n")
       this.change_UI_mode("assembly")
 
       // set compilation msg
@@ -435,10 +434,7 @@ export default {
 
       this.execution_UI_reset()
 
-      this.$root.$refs.simulatorView.$refs.registerFile.refresh() // refresh table execution
-
-      // Close all toast
-      // app.$bvToast.hide()
+      this.$root.$refs.simulatorView.$refs.registerFile.refresh() // refresh registers
     },
 
     // Execute one instruction
