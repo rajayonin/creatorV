@@ -42,6 +42,7 @@ import {
   status,
   stats,
   stats_value,
+  set_debug,
 } from "@/core/core.mjs"
 
 import {
@@ -340,6 +341,7 @@ export default {
     const url_hash = creator_preload_get2hash(window.location)
     creator_preload_fromHash(this, url_hash)
     this.set_dark_mode()
+    set_debug(this.c_debug)
   },
 
   /*************

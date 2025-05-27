@@ -139,7 +139,7 @@ export function creator_memory_clearall() {
     // clear all
     document.app.$data.main_memory = {};
 }
-function creator_memory_update_row_view(selected_view, segment_name, row_info) {
+export function creator_memory_update_row_view(selected_view, segment_name, row_info) {
     if (typeof document.app.$data.main_memory[row_info.addr] == "undefined") {
         return;
     }
@@ -164,7 +164,8 @@ function creator_memory_update_row_view(selected_view, segment_name, row_info) {
 
     document.app.$data.main_memory[row_info.addr].value = new_value;
 }
-function creator_memory_update_space_view(selected_view, segment_name, row_info) {
+
+export function creator_memory_update_space_view(selected_view, segment_name, row_info) {
     for (var i = 0; i < row_info.size; i++) {
         creator_memory_update_row_view(selected_view, segment_name, row_info);
         row_info.addr++;
