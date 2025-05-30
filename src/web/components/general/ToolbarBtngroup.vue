@@ -85,17 +85,17 @@ export default {
      */
     accesskey_prefix() {
       if (this.os === "Mac") {
-        return ["^ Control", "⌥ Option"]
+        return "^ ⌥ "
       } else {
         switch (this.browser) {
           case "Chrome":
-            return ["Alt"]
+            return "Alt+"
 
           case "Firefox":
-            return ["Alt", "Shift"]
+            return "Alt+Shift+"
 
           default:
-            return ["???"]
+            return "???"
         }
       }
     },
@@ -749,7 +749,7 @@ export default {
             </b-button>
           </template>
 
-          {{ this.accesskey_prefix.join(" + ") }} + X
+          {{ this.accesskey_prefix }}X
         </b-tooltip>
 
         <!-- button_instruction -->
@@ -768,7 +768,7 @@ export default {
             </b-button>
           </template>
 
-          {{ this.accesskey_prefix.join(" + ") }} + A
+          {{ this.accesskey_prefix }}A
         </b-tooltip>
 
         <!-- button_run -->
@@ -788,7 +788,7 @@ export default {
             </b-button>
           </template>
 
-          {{ this.accesskey_prefix.join(" + ") }} + R
+          {{ this.accesskey_prefix }}R
         </b-tooltip>
 
         <!-- button_flash -->
@@ -821,7 +821,7 @@ export default {
             </b-button>
           </template>
 
-          {{ this.accesskey_prefix.join(" + ") }} + C
+          {{ this.accesskey_prefix }}C
         </b-tooltip>
 
         <!-- button_examples -->
