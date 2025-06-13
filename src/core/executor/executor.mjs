@@ -19,7 +19,6 @@
 "use strict"
 import { instructions } from "../compiler/compiler.mjs"
 import {
-    app,
     architecture,
     stats_update,
     status,
@@ -41,6 +40,7 @@ import { buildInstructionPreload } from "./preload.mjs";
 import { dumpMemory } from "../core.mjs"; // To use with debugger
 import { main_memory, main_memory_write_value } from "../memory/memoryCore.mjs"; // For debugging only
 import { show_notification } from "@/web/utils.mjs"
+import { checkInterrupt, handleInterrupt } from "./interrupts.mts";
 
 export function packExecute(error, err_msg, err_type, draw) {
     const ret = {};
@@ -160,34 +160,12 @@ function initialize_execution(draw) {
     }
     return null;
 }
+
 function handle_interruptions(draw) {
-    const i_reg = crex_findReg_bytag("event_cause");
-    if (i_reg.match == 0) {
-        return;
+    if (status.interrupts_enabled && checkInterrupt()) {
+      draw.warning.push(status.execution_index);  // Print badge on instruction
+      handleInterrupt();
     }
-
-    const i_reg_value = readRegister(i_reg.indexComp, i_reg.indexElem);
-    if (i_reg_value == 0) {
-        return;
-    }
-
-    logger.info("Interruption detected");
-    draw.warning.push(status.execution_index);
-
-    const epc_reg = crex_findReg_bytag("exception_program_counter");
-
-    // Save current PC to EPC
-    writeRegister(pc_reg_value, epc_reg.indexComp, epc_reg.indexElem);
-
-    // Jump to handler
-    const handler_address = 0;
-    setPC(handler_address);
-
-    // Update execution index
-    // get_execution_index(draw); TODO: This is used for the UI
-
-    // Clear interrupt
-    writeRegister(0, i_reg.indexComp, i_reg.indexElem);
 }
 
 //Get execution index by PC
@@ -435,11 +413,11 @@ function executeInstructionCycle(draw) {
         return initResult;
     }
 
-    // Update execution index based on PC
-    get_execution_index(draw);
-
     // Handle any pending interruptions
     handle_interruptions(draw);
+
+    // Update execution index based on PC
+    get_execution_index(draw);
 
     // Process the current instruction
     const processingResult = processCurrentInstruction(draw);
