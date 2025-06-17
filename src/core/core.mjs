@@ -60,6 +60,7 @@ import {
 } from "./memory/stackTracker.mjs";
 import { creator_ga } from "./utils/creator_ga.mjs";
 import { creator_callstack_reset } from "./sentinel/sentinel.mjs";
+import { enableInterrupts, ExecutionMode } from "./executor/interrupts.mts";
 
 // Conditional import for the WASM compiler based on the environment (web or Deno)
 
@@ -102,7 +103,15 @@ export let architecture = {
     components: [],
     instructions: [],
     directives: [],
-}
+    // we have to put these defaults, or Typescript screams at us
+    interrupts: {
+        interrupt_enable: "",
+        interrupt_disable: "",
+        interrupt_check: "",
+        clear_interrupt: "",
+        get_handler_addr: "",
+    },
+};
 
 export let app;
 
@@ -116,6 +125,8 @@ export let status = {
     execution_index: 0,
     virtual_PC: 0n, // This is the PC the instructions see.
     error: 0,
+    execution_mode: ExecutionMode.User,
+    interrupts_enabled: false,
 };
 
 export const stats_value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -1226,6 +1237,9 @@ export function reset() {
     //Stack Reset
     creator_callstack_reset();
     track_stack_reset();
+
+    // reset interrupts
+    if (architecture.interrupts?.enabled) enableInterrupts();
 
     return true;
 }

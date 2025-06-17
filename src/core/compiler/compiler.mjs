@@ -49,6 +49,7 @@ import { logger, console_log } from "../utils/creator_logger.mjs";
 import { bin2hex, isDeno, isWeb } from "../utils/utils.mjs";
 
 import { main_memory_zerofill } from "../memory/memoryCore.mjs";
+import { enableInterrupts } from "@/core/executor/interrupts.mts";
 
 
 // Conditional import for the WASM compiler based on the environment (web or Deno)
@@ -543,6 +544,9 @@ export function assembly_compiler(code, library, color) {
     address = parseInt(architecture.memory_layout[0].value)
     data_address = parseInt(architecture.memory_layout[2].value)
     stack_address = parseInt(architecture.memory_layout[4].value)
+
+    // enable interrupts
+    if (architecture.interrupts?.enabled) enableInterrupts();
 
     // save current value as default values for reset()...
     creator_memory_prereset();
