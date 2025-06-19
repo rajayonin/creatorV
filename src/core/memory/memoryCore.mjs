@@ -243,6 +243,7 @@ export function main_memory_read_bydatatype(addr, type) {
         case "w":
         case "wu":
         case "integer":
+        case "int":
         case "word":
             ret = BigInt("0x" + main_memory_read_nbytes(addr, word_size_bytes));
             break;
@@ -446,6 +447,22 @@ export function main_memory_write_bydatatype(addr, value, type, value_human) {
                 type,
             );
             break;
+
+        case "char": {
+            main_memory_write_nbytes(
+                addr,
+                creator_memory_value_by_type(value.charCodeAt(0), "bu"),
+                1,
+                type,
+            );
+            main_memory_datatypes_update_or_create(
+                addr,
+                value_human,
+                size,
+                "byte",
+            );
+            break;
+        }
     }
 
     // update view

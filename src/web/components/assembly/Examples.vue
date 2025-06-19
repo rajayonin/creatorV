@@ -62,6 +62,8 @@ export default {
         $.ajaxSetup({ async: false })
         $.getJSON(set.url, cfg => {
           set.examples = cfg
+        }).fail(() => {
+          set.examples = []
         })
         delete set.url
       }
@@ -183,7 +185,7 @@ export default {
         available_sets[selected_set].examples.length === 0
       "
     >
-      There\'s no examples at the moment
+      There are no examples at the moment.
     </span>
 
     <b-list-group>
