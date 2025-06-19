@@ -28,6 +28,7 @@ import {
     creator_callstack_newWrite,
     creator_callstack_newRead,
 } from "../sentinel/sentinel.mjs";
+import { checkDeviceAddr } from "../executor/devices.mts";
 
 /*
  *  CREATOR instruction description API:
@@ -51,8 +52,9 @@ export const MEM = {
 
         const addr_16 = parseInt(addr, 16);
         if (
-            addr_16 >= parseInt(architecture.memory_layout[0].value) &&
-            addr_16 <= parseInt(architecture.memory_layout[1].value)
+            addr_16 >= parseInt(architecture.memory_layout[0].value, 16) &&
+            addr_16 <= parseInt(architecture.memory_layout[1].value, 16) &&
+            checkDeviceAddr(addr) === null
         ) {
             raise("Segmentation fault. You tried to write in the text segment");
             creator_executor_exit(true);
@@ -93,7 +95,8 @@ export const MEM = {
         const addr_16 = parseInt(addr, 16);
         if (
             addr_16 >= parseInt(architecture.memory_layout[0].value, 16) &&
-            addr_16 <= parseInt(architecture.memory_layout[1].value, 16)
+            addr_16 <= parseInt(architecture.memory_layout[1].value, 16) &&
+            checkDeviceAddr(addr) === null
         ) {
             raise("Segmentation fault. You tried to read in the text segment");
             creator_executor_exit(true);
@@ -123,5 +126,9 @@ export const MEM = {
         creator_callstack_newRead(i, j, addr, type);
 
         return ret;
+    },
+
+    alloc: size => {
+        raise("MEM.alloc is not implemented");
     },
 };

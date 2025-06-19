@@ -24,6 +24,7 @@ import {
   creator_memory_update_space_view,
   creator_memory_update_row_view,
 } from "@/core/memory/memoryViewManager.mjs"
+import {checkDeviceAddr} from "@/core/executor/devices.mts"
 
 export default {
   props: {
@@ -91,6 +92,9 @@ export default {
             addr > parseInt(this.memory_layout[3].value, 16) &&
             Math.abs(addr - end_callee) < this.stack_total_list * 4
           )
+
+        case "device_memory":
+          return checkDeviceAddr(addr) !== null
 
         default:
           return false

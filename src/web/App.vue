@@ -53,6 +53,8 @@ import { instructions } from "@/core/compiler/compiler.mjs"
 
 import { track_stack_names } from "@/core/memory/stackTracker.mjs"
 
+import { creator_ga } from "@/core/utils/creator_ga.mjs"
+
 import SpinnerLoading from "./components/general/SpinnerLoading.vue"
 import SupportedBrowsers from "./components/general/SupportedBrowsers.vue"
 import FormConfiguration from "./components/general/FormConfiguration.vue"
@@ -495,8 +497,8 @@ export default {
         "danger",
       )
 
-      if (execution_index !== -1) {
-        instructions[execution_index]._rowVariant = "danger"
+      if (status.execution_index !== -1) {
+        instructions[status.execution_index]._rowVariant = "danger"
       }
 
       /* Google Analytics */
