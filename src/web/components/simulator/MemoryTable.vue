@@ -19,7 +19,7 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <script>
-import { architecture, memory_hash, architecture_hash } from "@/core/core.mjs"
+import { architecture, memory_hash, REGISTERS } from "@/core/core.mjs"
 import {
   creator_memory_update_space_view,
   creator_memory_update_row_view,
@@ -40,17 +40,30 @@ export default {
 
   data() {
     return {
-      architecture_hash,
       architecture,
-      /*Memory table fields*/
-      memFields: ["Tag", "Address", "Binary", "Value"],
+
+      memFields: [{ key: "Tag", label: "" }, "Address", "Binary", "Value"],
       row_info: null,
       selected_space_view: null,
       selected_stack_view: null,
+
+      ctrl_register_tags: [
+        "program_counter",
+        "stack_pointer",
+        "frame_pointer",
+        "global_pointer",
+      ],
+
+      render: 0n, // dummy variable to force components with this as key to refresh
     }
   },
 
   methods: {
+    refresh() {
+      // refreshes children components with `:key="render"`
+      this.render++
+    },
+
     /**
      * Filters which rows to show, depending on the data segment
      */
@@ -80,7 +93,6 @@ export default {
           )
 
         case "data_memory":
-          // return true
           return (
             addr >= parseInt(this.memory_layout[2].value, 16) &&
             addr <= parseInt(this.memory_layout[3].value, 16)
@@ -89,7 +101,7 @@ export default {
         case "stack_memory":
           return (
             addr > parseInt(this.memory_layout[3].value, 16) &&
-            Math.abs(addr - end_callee) < this.stack_total_list * 4
+            Math.abs(addr - this.end_callee) < this.stack_total_list * 4
           )
 
         default:
@@ -99,7 +111,7 @@ export default {
 
     // TODO: generic and include modal
     select_data_type(record, index) {
-      this.row_info = { index: index, addr: record.addr - 3, size: record.size }
+      this.row_info = { index, addr: record.addr - 3, size: record.size }
 
       if (this.memory_segment === "instructions_memory") {
         return
@@ -158,17 +170,43 @@ export default {
           row.item.addr >= parseInt(architecture.memory_layout[0].value, 16) &&
           row.item.addr <= architecture.memory_layout[3].value,
         "h6Sm text-secondary ":
-          row.item.addr < this.$root.end_callee &&
-          Math.abs(row.item.addr - this.$root.end_callee) <
-            this.stack_total_list * 4,
-        "h6Sm text-success   ":
+          row.item.addr < this.end_callee &&
+          Math.abs(row.item.addr - this.end_callee) < this.stack_total_list * 4,
+        "h6Sm text-success":
           row.item.addr < this.$root.begin_callee &&
-          row.item.addr >= this.$root.end_callee,
+          row.item.addr >= this.end_callee,
         "h6Sm text-blue-funny":
           row.item.addr < this.$root.begin_caller &&
           row.item.addr >= this.$root.end_caller,
-        "h6Sm                ": row.item.addr >= this.$root.begin_caller,
+        h6Sm: row.item.addr >= this.$root.begin_caller,
       }
+    },
+
+    /**
+     * Checks if any of the special control registers are pointing to this
+     * address, and returns its types and names.
+     *
+     * @param {Number} addr Adress to check
+     *
+     * @returns {Array<{type: string, name: string}>}
+     */
+    get_pointers(addr) {
+      return REGISTERS.flatMap(bank =>
+        bank.elements
+          .filter(
+            register =>
+              // check it's one of the control registers
+              register.properties.some(p =>
+                this.ctrl_register_tags.includes(p),
+              ) &&
+              // check value is correct
+              (register.value & 0xfffffffcn) === (BigInt(addr) & 0xfffffffcn),
+          )
+          .map(reg => ({
+            type: reg.properties.find(p => this.ctrl_register_tags.includes(p)),
+            name: reg.name[1] || reg.name[0],
+          })),
+      )
     },
   },
 
@@ -209,59 +247,36 @@ export default {
               </div>
             </template>
 
-            <!-- remove "Tag" column title -->
-            <template v-slot:head(Tag)="_row"> &nbsp; </template>
-
             <!-- control register badges -->
 
             <template v-slot:cell(Tag)="row">
-              <div v-for="bank in architecture_hash" :key="bank.index">
-                <div
-                  v-for="register in architecture.components[bank.index]
-                    .elements"
-                  :key="register.name[0]"
-                >
-                  <!-- program counter -->
-                  <div
-                    v-for="register in architecture.components[bank.index]
-                      .elements"
-                    :key="register.name[0]"
-                  >
-                    <div
-                      v-if="
-                        register.properties.includes('program_counter') &&
-                        (parseInt(register.value) & 0xfffffffc) ==
-                          (row.item.addr & 0xfffffffc)
-                      "
-                    >
-                      <b-badge
-                        variant="success"
-                        class="border border-info shadow memoryTag"
-                      >
-                        {{ register.name[1] || register.name[0] }}
-                      </b-badge>
-                      <font-awesome-icon icon="fa-solid fa-right-long" />
-                    </div>
-                  </div>
+              <!--
+              OK, here we go...
+              I'd _like_ to prevent doing this. I HATE doing this, but good ol'
+              Vue makes me do this, as I found no other way.
 
-                  <!-- pointers -->
-                  <div
-                    v-if="
-                      (register.properties.includes('stack_pointer') ||
-                        register.properties.includes('frame_pointer') ||
-                        register.properties.includes('global_pointer')) &&
-                      (parseInt(register.value) & 0xfffffffc) ==
-                        (row.item.addr & 0xfffffffc)
-                    "
+              We want the badges to automatically update, right? It _should_ be
+              as easy as using the method and that's it, but no... Vue doesn't
+              like this. Maybe it's because the method depends on row.item.addr,
+              and that doesn't change when registers change, so nothing updates.
+
+              The "hack" I found is adding another horrible line in the
+              updateRegisterUI function to force update these components every
+              time we update a register. It's hacky, its inefficient, and it's
+              plain ugly, but it works.
+              -->
+              <div :key="render">
+                <div
+                  v-for="{ type, name } of get_pointers(row.item.addr)"
+                  :key="type"
+                >
+                  <b-badge
+                    class="border border-info shadow memoryTag"
+                    :variant="type === 'program_counter' ? 'success' : 'info'"
                   >
-                    <b-badge
-                      variant="info"
-                      class="border border-info shadow memoryTag"
-                    >
-                      {{ register.name[1] || register.name[0] }}
-                    </b-badge>
-                    <font-awesome-icon icon="fa-solid fa-right-long" />
-                  </div>
+                    {{ name }}
+                  </b-badge>
+                  <font-awesome-icon icon="fa-solid fa-right-long" />
                 </div>
               </div>
             </template>
@@ -329,7 +344,7 @@ export default {
         </b-col>
       </b-row>
 
-      <!-- Stack -->
+      <!-- TODO: Stack -->
       <!-- <b-row align-v="end">
         <b-col>
           <div
@@ -393,6 +408,8 @@ export default {
       </b-row> -->
     </b-container>
 
+    <!-- Modals -->
+
     <b-modal
       id="space_modal"
       size="sm"
@@ -421,18 +438,18 @@ export default {
       @hidden="hide_stack_modal"
       @ok="change_stack_view"
     >
-      <b-form-radio v-model="selected_stack_view" value="sig_int"
-        >Signed Integer</b-form-radio
-      >
-      <b-form-radio v-model="selected_stack_view" value="unsig_int"
-        >Unsigned Integer</b-form-radio
-      >
-      <b-form-radio v-model="selected_stack_view" value="float"
-        >Float</b-form-radio
-      >
-      <b-form-radio v-model="selected_stack_view" value="char"
-        >Char</b-form-radio
-      >
+      <b-form-radio v-model="selected_stack_view" value="sig_int">
+        Signed Integer
+      </b-form-radio>
+      <b-form-radio v-model="selected_stack_view" value="unsig_int">
+        Unsigned Integer
+        </b-form-radio>
+      <b-form-radio v-model="selected_stack_view" value="float">
+        Float
+      </b-form-radio>
+      <b-form-radio v-model="selected_stack_view" value="char">
+        Char
+      </b-form-radio>
     </b-modal> -->
   </div>
 </template>

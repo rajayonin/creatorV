@@ -87,6 +87,7 @@ export default {
       <b-col align-h="center" class="px-2">
         <MemoryTable
           class="my-2"
+          ref="memory_table"
           :main_memory="main_memory"
           :memory_segment="mem_representation"
           :track_stack_names="track_stack_names"
