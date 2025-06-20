@@ -28,7 +28,7 @@ import {
   newArchitectureLoad,
 } from "@/core/core.mjs"
 import { creator_memory_clear } from "@/core/memory/memoryOperations.mjs"
-import { show_notification } from "@/web/utils.mjs"
+import { show_notification, storeBackup } from "@/web/utils.mjs"
 import { clear_instructions } from "@/core/compiler/compiler.mjs"
 
 export default {
@@ -90,6 +90,8 @@ export default {
       creator_memory_clear()
 
       show_notification("Architecture edited correctly", "success")
+
+      storeBackup()
     },
 
     handleReady({ view, _state }) {
