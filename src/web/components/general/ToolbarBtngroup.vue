@@ -31,7 +31,7 @@ import {
 import { instructions } from "@/core/compiler/compiler.mjs"
 import { step, packExecute } from "@/core/executor/executor.mjs"
 import { creator_ga } from "@/core/utils/creator_ga.mjs"
-import { show_notification, loadArchitecture } from "@/web/utils.mjs"
+import { show_notification, loadArchitecture, storeBackup } from "@/web/utils.mjs"
 
 
 export default {
@@ -267,7 +267,7 @@ export default {
       // Close all toast
       // app.$bvToast.hide()
 
-      // enable execution buttons
+      storeBackup()
     },
 
     // Show error message in the compilation

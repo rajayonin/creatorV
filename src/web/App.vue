@@ -571,7 +571,7 @@ export default {
     />
 
     <!-- Backup modal -->
-    <UIeltoBackup id="copy" />
+    <UIeltoBackup id="copy" @load-architecture="creator_mode = 'simulator'" />
   </header>
 
   <!----------------------->
