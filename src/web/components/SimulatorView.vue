@@ -27,6 +27,7 @@ import Examples from "./assembly/Examples.vue"
 import Memory from "./simulator/Memory.vue"
 import Monitor from "./simulator/Monitor.vue"
 import Keyboard from "./simulator/Keyboard.vue"
+import Calculator from "./simulator/Calculator.vue"
 
 import { architecture } from "@/core/core.mjs"
 import { instructions } from "@/core/compiler/compiler.mjs"
@@ -59,12 +60,13 @@ export default {
     Memory,
     Monitor,
     Keyboard,
+    Calculator
   },
 
   data() {
     return {
-      architecture: architecture,
-      instructions: instructions,
+      architecture,
+      instructions,
 
       // stack
       callee_subrutine: "",
@@ -115,7 +117,7 @@ export default {
         />
 
         <!-- Calculator -->
-        <!-- <Calculator id="calculator" /> -->
+        <Calculator id="calculator" />
 
         <b-container fluid align-h="center" class="mx-0 px-0">
           <b-row align-h="center">
