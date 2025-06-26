@@ -354,6 +354,7 @@ function buildCompleteInstruction(
         clk_cycles: template.clk_cycles,
         fields: mergedFields,
         definition: instruction.definition,
+        help: instruction.help || ""
     };
 
     if (legacy) {
@@ -362,7 +363,6 @@ function buildCompleteInstruction(
         result.type = "Other";
         result.description = "";
         result.separated = [];
-        result.help = "";
         let breakpoint = instruction.name;
         // Create arrays to hold ordered fields
         const orderedFields = [];
@@ -1020,7 +1020,7 @@ export function newArchitectureLoad(
         logger.error(`Error loading architecture: ${error}`);
         return {
             errorcode: "load_error",
-            token: `Failed to load architecture: ${error.message}`,
+            token: `Failed to load architecture: ${error.message || error}`,
             type: "error",
             update: "",
             status: "ko",
