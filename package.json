@@ -12,7 +12,7 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "simtest": "python ./tests/arch_tests.py",
-    "test": "deno test -A --unstable-node-globals"
+    "test": "deno test -A --unstable-node-globals --parallel"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.1",
