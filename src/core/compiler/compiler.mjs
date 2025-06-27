@@ -194,6 +194,7 @@ export const example_available = [];
 /*Instructions memory*/
 export let instructions = [];
 export function clear_instructions() { instructions = [] }
+export function set_instructions(value) { instructions = value }
 let instructions_tag = [];
 export let tag_instructions = {};
 let instructions_binary = [];
