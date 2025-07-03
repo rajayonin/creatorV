@@ -1163,7 +1163,7 @@ export function newArchitectureLoad(
         logger.error(`Error loading architecture: ${error}`);
         return {
             errorcode: "load_error",
-            token: `Failed to load architecture: ${error.message}`,
+            token: `Failed to load architecture: ${error}`,
             type: "error",
             update: "",
             status: "ko",
