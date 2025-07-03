@@ -1035,6 +1035,7 @@ function applyHintHighlighting(
         hint: { hint: string; sizeInBits?: number };
         offset: number;
     }>,
+    wordSize: number,
 ): string {
     let highlightedValue = memValue;
     const colors = getHintColors();
@@ -1048,8 +1049,8 @@ function applyHintHighlighting(
         const startChar = 2 + offset * 2; // Skip "0x" and account for byte position
         const endChar = startChar + sizeInBytes * 2;
 
-        // Only highlight if the hint fits within this 4-byte word
-        if (offset + sizeInBytes <= 4) {
+        // Only highlight if the hint fits within this word
+        if (offset + sizeInBytes <= wordSize) {
             const before = highlightedValue.substring(0, startChar);
             const toHighlight = highlightedValue.substring(startChar, endChar);
             const after = highlightedValue.substring(endChar);
@@ -1063,18 +1064,21 @@ function applyHintHighlighting(
 }
 
 function displayMemory(address: number, count: number) {
+    // Get word size from architecture instead of hardcoding 4 bytes
+    const wordSize = creator.main_memory.getWordSize();
+
     // Display memory contents with hints
-    for (let i = 0; i < count; i += 4) {
+    for (let i = 0; i < count; i += wordSize) {
         const currentAddr = address + i;
-        const bytes = creator.dumpAddress(currentAddr, 4);
+        const bytes = creator.dumpAddress(currentAddr, wordSize);
         const formattedAddr = `0x${currentAddr.toString(16).padStart(8, "0")}`;
 
-        // Check for hints at this address and collect all hints in this 4-byte range
+        // Check for hints at this address and collect all hints in this word-sized range
         const hintsInRange: Array<{
             hint: { hint: string; sizeInBits?: number };
             offset: number;
         }> = [];
-        for (let j = 0; j < 4; j++) {
+        for (let j = 0; j < wordSize; j++) {
             const byteAddr = BigInt(currentAddr + j);
             const hint = creator.main_memory.getHint(byteAddr);
             if (hint) {
@@ -1091,7 +1095,11 @@ function displayMemory(address: number, count: number) {
 
             // Apply highlighting for each hint (if not in accessible mode)
             if (!ACCESSIBLE) {
-                memValue = applyHintHighlighting(memValue, hintsInRange);
+                memValue = applyHintHighlighting(
+                    memValue,
+                    hintsInRange,
+                    wordSize,
+                );
             }
 
             // Collect all hint descriptions with matching colors
@@ -1134,7 +1142,9 @@ function displayMemory(address: number, count: number) {
 function handleMemCommand(args: string[]) {
     if (args.length > 1) {
         const address = parseInt(args[1], 16);
-        const count = args.length > 2 ? parseInt(args[2], 10) : 4;
+        // Default to showing one word of memory
+        const wordSize = creator.main_memory.getWordSize();
+        const count = args.length > 2 ? parseInt(args[2], 10) : wordSize;
         displayMemory(address, count);
     } else {
         console.log("Usage: mem <address> [count]");
@@ -1296,9 +1306,15 @@ function handleStackCommand(args: string[]) {
         }
 
         // Show memory contents with frame boundary annotations
-        for (let addr = startAddress; addr < stackEndAddress; addr += 4n) {
-            const bytes = creator.dumpAddress(addr, 4);
-            const valueStr = "0x" + bytes.padStart(8, "0").toUpperCase();
+        const wordSize = creator.main_memory.getWordSize();
+        for (
+            let addr = startAddress;
+            addr < stackEndAddress;
+            addr += BigInt(wordSize)
+        ) {
+            const bytes = creator.dumpAddress(addr, wordSize);
+            const valueStr =
+                "0x" + bytes.padStart(wordSize * 2, "0").toUpperCase();
             const formattedAddr = `0x${addr.toString(16).padStart(8, "0").toUpperCase()}`;
 
             // Identify which frame this address belongs to and add annotations
