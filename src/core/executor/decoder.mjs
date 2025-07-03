@@ -522,7 +522,7 @@ export function decode_instruction(
                     replaceRegisterNames(instructionExecParts);
 
                 return {
-                    type: instruction.type,
+                    type: instruction.template,
                     signatureDef: decodedBinary.signatureDef,
                     signatureParts: decodedBinary.signatureParts,
                     signatureRawParts: decodedBinary.signatureRawParts,

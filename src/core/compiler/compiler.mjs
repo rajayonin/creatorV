@@ -22,8 +22,6 @@ import {
     architecture,
     architecture_hash,
     status,
-    stats,
-    stats_value,
     code_assembly,
     update_binary,
     backup_stack_address,
@@ -32,6 +30,7 @@ import {
     dumpMemory,
     REGISTERS,
 } from "../core.mjs";
+import { resetStats } from "../executor/stats.mjs";
 import {
     creator_memory_prereset,
     creator_memory_zerofill,
@@ -322,13 +321,12 @@ export function assembly_compiler(code, library, color) {
         REGISTERS[1].elements[29].default_value = bi_intToBigInt(stack_address,10) ;
         REGISTERS[0].elements[0].default_value  = bi_intToBigInt(address,10) ;*/
 
-    /*Reset stats*/
-    status.totalStats = 0;
-    for (let i = 0; i < stats.length; i++) {
-        stats[i].percentage = 0;
-        stats[i].number_instructions = 0;
-        stats_value[i] = 0;
-    }
+    /* Reset stats */
+
+    resetStats()
+
+    status.executedInstructions = 0;
+    status.clkCycles = 0;
 
     // Compile code
     let label_table;

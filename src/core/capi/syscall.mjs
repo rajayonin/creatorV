@@ -18,7 +18,7 @@
  *
  */
 "use strict";
-import { status, total_clk_cycles } from "../core.mjs";
+import { status } from "../core.mjs";
 import { crex_findReg } from "../register/registerLookup.mjs";
 import { creator_executor_exit, packExecute } from "../executor/executor.mjs";
 import {
@@ -177,6 +177,6 @@ export const SYSCALL = {
             "execute.syscall.get_clk_cycles",
         );
 
-        return total_clk_cycles;
+        return status.total_clk_cycles;
     },
 };
