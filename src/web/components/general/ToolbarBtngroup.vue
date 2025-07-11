@@ -34,6 +34,7 @@ import { creator_ga } from "@/core/utils/creator_ga.mjs"
 import { show_notification, loadArchitecture } from "@/web/utils.mjs"
 import { assembly_compiler_sjasmplus } from "@/core/compiler/sjasmplus/web/sjasmplus.mjs"
 import { assembly_compiler_rasm } from "@/core/compiler/rasm/web/rasm.mjs"
+import { assembly_compiler_default } from "@/core/compiler/creatorCompiler/web/creatorCompiler.mjs"
 
 
 export default {
@@ -62,12 +63,12 @@ export default {
       stop_disable: true,
       selectedCompiler: "default",
       compilerOptions: [
-        { value: "default", text: "Default Compiler" },
+        { value: "default", text: "CREATOR" },
         { value: "sjasmplus", text: "Sjasmplus" },
         { value: "rasm", text: "RASM" }
       ],
       compiler_map: {
-        default: null,
+        default: assembly_compiler_default,
         sjasmplus: assembly_compiler_sjasmplus,
         rasm: assembly_compiler_rasm,
       },

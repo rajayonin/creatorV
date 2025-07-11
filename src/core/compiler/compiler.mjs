@@ -25,22 +25,7 @@ import {
 } from "../core.mjs";
 import { decode_instruction } from "../executor/decoder.mjs";
 import { logger } from "../utils/creator_logger.mjs";
-import {isDeno, isWeb } from "../utils/utils.mjs";
-
-// Conditional import for the WASM compiler based on the environment (web or 
-import { assembly_compiler_default } from "./creatorCompiler/web/creatorCompiler.mjs";
-
-// export let DataCategoryJS;
-// if (isDeno) {
-//     // Deno HAS to be imported like this, as it doesn't provide a default
-//     DataCategoryJS = DataCategoryJS_deno;
-// } else if (isWeb) {
-//     DataCategoryJS = DataCategoryJS_web;
-// } else {
-//     throw new Error(
-//         "Unsupported environment: neither Deno nor web browser detected",
-//     );
-// }
+import ansicolor from "ansicolor";
 
 export let align;
 
@@ -85,6 +70,27 @@ export function writeMultiByteValueAsWords(addr, bytes, wordSizeBytes) {
         }
         main_memory.writeWord(addr + BigInt(wordOffset), wordBytes);
     }
+}
+
+/**
+ * Converts error messages containing ANSI escape codes to HTML with CSS styling
+ * @param {string|Error} error - Error message or Error object containing ANSI escape codes
+ * @returns {string} HTML string with CSS styling preserving original colors
+ */
+export function formatErrorWithColors(error) {
+    // Parse the error string (which contains ANSI escape codes) into spans
+    const errorMsg = String(error);
+    const parsed = ansicolor.parse(errorMsg);
+    
+    // Convert spans to HTML with CSS styling
+    const htmlMsg = parsed.spans.map(span => {
+        if (span.css) {
+            return `<span style="${span.css}">${span.text}</span>`;
+        }
+        return span.text;
+    }).join('');
+    
+    return htmlMsg;
 }
 
 //
@@ -194,6 +200,10 @@ export function parseDebugSymbols(debugSymbols) {
  * @param {any} library
  * @param {string} compiler
  */
-export function assembly_compiler(code, library, compiler = assembly_compiler_default) {
+export function assembly_compiler(code, library, compiler) {
+    // If no compiler is specified, error out
+    if (!compiler) {
+        raise("No compiler specified for assembly compilation");
+    }
     return compiler(code, library);
 }
