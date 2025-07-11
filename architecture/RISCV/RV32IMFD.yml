@@ -1594,29 +1594,29 @@ instructions:
     - name: sb
       type: S
       fields:
-          - field: opcode
-            value: "0100011"
-          - field: funct3
-            value: "000"
+        - field: opcode
+          value: "0100011"
+        - field: funct3
+          value: "000"
       definition: "CAPI.MEM.write(rs1+imm, 1, BigInt.asUintN(8,rs2), rs2_name, 'byte');"
 
     - name: sh
       type: S
       fields:
-          - field: opcode
-            value: "0100011"
-          - field: funct3
-            value: "001"
+        - field: opcode
+          value: "0100011"
+        - field: funct3
+          value: "001"
       definition: "CAPI.MEM.write(imm+rs1, 2, BigInt.asUintN(16,rs2), rs2_name, 'half');"
 
     # The check for the
     - name: sw
       type: S
       fields:
-          - field: opcode
-            value: "0100011"
-          - field: funct3
-            value: "010"
+        - field: opcode
+          value: "0100011"
+        - field: funct3
+          value: "010"
       definition: "CAPI.MEM.write(imm+rs1, 4, BigInt.asUintN(32,rs2), rs2_name, 'word');"
 
     # U-type instructions
@@ -2176,12 +2176,12 @@ instructions:
     - name: fsw
       type: S
       fields:
-          - field: opcode
-            value: "0100111"
-          - field: funct3
-            value: "010"
-          - field: rs2
-            type: SFP-Reg
+        - field: opcode
+          value: "0100111"
+        - field: funct3
+          value: "010"
+        - field: rs2
+          type: SFP-Reg
       definition: "let value = rs2 & 0xFFFFFFFFn; CAPI.MEM.write(rs1+imm, 4, value, rs2_name, 'float32');"
   D:
     #   ____ __     __ _____ ____   ____
@@ -2623,12 +2623,12 @@ instructions:
     - name: fsd
       type: S
       fields:
-          - field: opcode
-            value: "0100111"
-          - field: funct3
-            value: "011"
-          - field: rs2 # We're overriding the rs2 field from the template
-            type: DFP-Reg
+        - field: opcode
+          value: "0100111"
+        - field: funct3
+          value: "011"
+        - field: rs2 # We're overriding the rs2 field from the template
+          type: DFP-Reg
       definition: "var val = BigInt('0x' + CAPI.FP.split_double(rs2, 0));\n CAPI.MEM.write(rs1+imm, 4, val, rs2_name);\n val = BigInt('0x' + CAPI.FP.split_double(rs2, 1));\n CAPI.MEM.write(rs1+imm+4n, 4, val, rs2_name); CAPI.MEM.addHint(rs1+imm, 'float64', 64);"
   Zicsr:
       #   _____ _

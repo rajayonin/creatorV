@@ -57,31 +57,18 @@ import { creator_callstack_reset } from "./sentinel/sentinel.mjs";
 
 // Conditional import for the WASM compiler based on the environment (web or Deno)
 
-import wasm_web_init, {
-    Color as Color_web,
-    ArchitectureJS as ArchitectureJS_web,
-} from "./compiler/web/creator_compiler.js";
-import {
-    Color as Color_deno,
-    ArchitectureJS as ArchitectureJS_deno,
-} from "./compiler/deno/creator_compiler.js";
+// import {
+//     Color as Color_deno,
+//     ArchitectureJS as ArchitectureJS_deno,
+// } from "./compiler/creatorCompiler/deno/creator_compiler.js";
 
-let Color;
-let ArchitectureJS;
-if (isDeno) {
-    // Deno HAS to be imported like this, as it doesn't provide a default
-    Color = Color_deno;
-    ArchitectureJS = ArchitectureJS_deno;
-} else if (isWeb) {
-    Color = Color_web;
-    ArchitectureJS = ArchitectureJS_web;
-    // in the web, we MUST call the default
-    wasm_web_init();
-} else {
-    throw new Error(
-        "Unsupported environment: neither Deno nor web browser detected",
-    );
-}
+// let Color;
+// let ArchitectureJS;
+// if (isDeno) {
+//     // Deno HAS to be imported like this, as it doesn't provide a default
+//     Color = Color_deno;
+//     ArchitectureJS = ArchitectureJS_deno;
+// }
 
 export let code_assembly = "";
 export let update_binary = "";
@@ -1009,8 +996,8 @@ function prepareArchitecture(
         return Math.max(max, instruction.nwords || 1);
     }, 1);
 
-    // Convert to JSON for WASM
-    const architectureJson = JSON.stringify(architectureObj);
+    // // Convert to JSON for WASM
+    // const architectureJson = JSON.stringify(architectureObj);
 
     // Dump the architecture JSON to a file for debugging
     if (dump) {
@@ -1024,11 +1011,6 @@ function prepareArchitecture(
                 `Could not write architecture file: ${writeError.message}`,
             );
         }
-    }
-
-    // Initialize WASM compiler if not skipped
-    if (!skipCompiler) {
-        arch = ArchitectureJS.from_json(architectureJson);
     }
 
     return architectureObj;
@@ -1196,11 +1178,10 @@ export function load_library(lib_str) {
 
 // compilation
 
-export function assembly_compile(code, enable_color, compiler = "default") {
-    const ret = assembly_compiler(
+export async function assembly_compile(code, compiler) {
+    const ret = await assembly_compiler(
         code,
         false,
-        enable_color ? Color.Ansi : Color.Off,
         compiler,
     );
     switch (ret.status) {
@@ -1252,7 +1233,7 @@ export const clk_cycles = [
 ];
 export function clk_cycles_update(type) {
     for (let i = 0; i < clk_cycles.length; i++) {
-        if (type == clk_cycles[i].type) {
+        if (type === clk_cycles[i].type) {
             clk_cycles[i].clk_cycles++;
 
             clk_cycles_value[0].data[i]++;
@@ -1289,7 +1270,7 @@ function clk_cycles_reset() {
 
 export function stats_update(type) {
     for (let i = 0; i < stats.length; i++) {
-        if (type == stats[i].type) {
+        if (type === stats[i].type) {
             stats[i].number_instructions++;
             stats_value[i]++;
 

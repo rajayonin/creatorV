@@ -32,6 +32,8 @@ import { instructions } from "@/core/compiler/compiler.mjs"
 import { step, packExecute } from "@/core/executor/executor.mjs"
 import { creator_ga } from "@/core/utils/creator_ga.mjs"
 import { show_notification, loadArchitecture } from "@/web/utils.mjs"
+import { assembly_compiler_sjasmplus } from "@/core/compiler/sjasmplus/web/sjasmplus.mjs"
+import { assembly_compiler_rasm } from "@/core/compiler/rasm/web/rasm.mjs"
 
 
 export default {
@@ -58,9 +60,24 @@ export default {
       instruction_disable: false,
       run_disable: false,
       stop_disable: true,
+      selectedCompiler: "default",
+      compilerOptions: [
+        { value: "default", text: "Default Compiler" },
+        { value: "sjasmplus", text: "Sjasmplus" },
+        { value: "rasm", text: "RASM" }
+      ],
+      compiler_map: {
+        default: null,
+        sjasmplus: assembly_compiler_sjasmplus,
+        rasm: assembly_compiler_rasm,
+      },
     };
   },
   computed: {
+    selectedCompilerLabel() {
+      const found = this.compilerOptions.find(opt => opt.value === this.selectedCompiler);
+      return found ? found.text : "";
+    },
     arch_available() {
       return this.architectures.filter(item => item.available === 1);
     },
@@ -185,7 +202,7 @@ export default {
     },
 
     //Compile assembly code
-    assembly_compiler() {
+    async assembly_compiler() {
 
       // reset simulator
       this.$root.keyboard = ""
@@ -195,75 +212,81 @@ export default {
 
       this.compiling = true // Change buttons status
 
-      // we use the setTimeout so the UI can update while compiling
-      setTimeout(() => {
-        // Compile
-        // if (typeof code !== "undefined") {
-        //   code_assembly = code
-        // } else {
-        //   code_assembly = textarea_assembly_editor.getValue()
-        // }
-        const ret = assembly_compile(this.$root.assembly_code)
+      // Compile
+      // if (typeof code !== "undefined") {
+      //   code_assembly = code
+      // } else {
+      //   code_assembly = textarea_assembly_editor.getValue()
+      // }
+      // Select compiler function
+      const compilerFn = this.compiler_map[this.selectedCompiler];
+      // If default, let assembly_compile use its internal default
+      const ret = await (compilerFn
+        ? assembly_compile(this.$root.assembly_code, compilerFn)
+        : assembly_compile(this.$root.assembly_code));
 
-        //TODO: Update/reset stats
-        // app._data.totalStats = 0
-        // app._data.instructions = instructions
-        // tokenIndex = 0 //TODO: change to token_index in all files
-        // uielto_toolbar_btngroup.methods.reset(true)
+      //TODO: Update/reset stats
+      // app._data.totalStats = 0
+      // app._data.instructions = instructions
+      // tokenIndex = 0 //TODO: change to token_index in all files
+      // uielto_toolbar_btngroup.methods.reset(true)
 
-        // TODO: Save a backup in the cache memory
-        // if (typeof Storage !== "undefined") {
-        //   const aux_object = jQuery.extend(true, {}, architecture)
-        //   const aux_architecture = register_value_serialize(aux_object)
-        //   const aux_arch = JSON.stringify(aux_architecture, null, 2)
+      // TODO: Save a backup in the cache memory
+      // if (typeof Storage !== "undefined") {
+      //   const aux_object = jQuery.extend(true, {}, architecture)
+      //   const aux_architecture = register_value_serialize(aux_object)
+      //   const aux_arch = JSON.stringify(aux_architecture, null, 2)
 
-        //   const date = new Date()
-        //   const auxDate =
-        //     date.getHours() +
-        //     ":" +
-        //     date.getMinutes() +
-        //     ":" +
-        //     date.getSeconds() +
-        //     " - " +
-        //     date.getDate() +
-        //     "/" +
-        //     (date.getMonth() + 1) +
-        //     "/" +
-        //     date.getFullYear()
+      //   const date = new Date()
+      //   const auxDate =
+      //     date.getHours() +
+      //     ":" +
+      //     date.getMinutes() +
+      //     ":" +
+      //     date.getSeconds() +
+      //     " - " +
+      //     date.getDate() +
+      //     "/" +
+      //     (date.getMonth() + 1) +
+      //     "/" +
+      //     date.getFullYear()
 
-        //   localStorage.setItem(
-        //     "backup_arch_name",
-        //     app._data.architecture_name,
-        //   )
-        //   localStorage.setItem("backup_arch", aux_arch)
-        //   localStorage.setItem("backup_asm", code_assembly)
-        //   localStorage.setItem("backup_date", auxDate)
-        // }
+      //   localStorage.setItem(
+      //     "backup_arch_name",
+      //     app._data.architecture_name,
+      //   )
+      //   localStorage.setItem("backup_arch", aux_arch)
+      //   localStorage.setItem("backup_asm", code_assembly)
+      //   localStorage.setItem("backup_date", auxDate)
+      // }
 
-        //show error/warning
+      //show error/warning
 
-        //Change buttons status
-        this.compiling = false;
+      //Change buttons status
+      this.compiling = false;
+      this.$root.instructions.splice(0, this.$root.instructions.length, ...instructions)
 
-        switch (ret.type) {
-          case "error":
-            this.compile_error(ret.msg);
-            break;
+      switch (ret.type) {
+        case "error":
+          this.compile_error(ret.msg);
+          break;
 
-          case "warning":
-            show_notification(ret.token, ret.bgcolor)
-            break
+        case "warning":
+          show_notification(ret.token, ret.bgcolor)
+          break
 
-          default:
-            // put rowVariant in entrypoint (we assume the main label exists)
-            instructions.find(inst => inst.Label === "main")._rowVariant = "success"
-            show_notification("Compilation completed successfully", "success")
-            this.change_UI_mode("simulator")
-            break
-        }
-        this.compiling = false
-      }, 25)
-
+        default:
+          // put rowVariant in entrypoint (we assume the main label exists)
+          const start_inst = instructions.find(inst => inst.Label === "start")
+          if (start_inst) {
+            start_inst._rowVariant = "success"
+          }
+          show_notification("Compilation completed successfully", "success")
+          this.change_UI_mode("simulator")
+          this.$root.simulatorViewKey += 1; // Increment key to force SimulatorView re-render
+          break
+      }
+      this.compiling = false
       // Close all toast
       // app.$bvToast.hide()
 
@@ -684,19 +707,37 @@ export default {
           </b-dropdown-item>
         </b-dropdown>
 
-        <!-- button_compile -->
-        <b-button
+        <!-- assembler dropdown split button -->
+        <b-dropdown
           v-if="item === 'btn_compile'"
-          class="actionsGroup h-100"
-          size="sm"
+          menu-class="menuButton"
           variant="outline-secondary"
-          id="compile_assembly"
-          @click="assembly_compiler()"
+          split
+          right
+          size="sm"
+          :id="'compile_assembly'"
         >
-          <font-awesome-icon icon="fa-sign-in-alt" />
-          Assemble/Link
-          <b-spinner small v-if="compiling" class="ml-3"></b-spinner>
-        </b-button>
+          <template #button-content>
+            <b-button
+              variant="outline-secondary"
+              size="sm"
+              class="w-100"
+              @click.stop="assembly_compiler()"
+              style="background: none; border: none; box-shadow: none;"
+            >
+              <font-awesome-icon icon="fa-sign-in-alt" />
+              {{ 'Assemble' + (selectedCompilerLabel ? ' (' + selectedCompilerLabel + ')' : '') }}
+              <b-spinner small v-if="compiling" class="ml-3"></b-spinner>
+            </b-button>
+          </template>
+          <b-dropdown-item-button
+            v-for="option in compilerOptions"
+            :key="option.value"
+            @click="selectedCompiler = option.value"
+          >
+            {{ option.text }}
+          </b-dropdown-item-button>
+        </b-dropdown>
 
         <!-- dropdown_library -->
         <b-dropdown

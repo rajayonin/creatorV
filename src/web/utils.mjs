@@ -113,9 +113,9 @@ export function hide_loading() {
 export function backup_modal(env) {
     if (typeof Storage !== "undefined") {
         if (
-            localStorage.getItem("backup_arch") != null &&
-            localStorage.getItem("backup_asm") != null &&
-            localStorage.getItem("backup_date") != null
+            localStorage.getItem("backup_arch") !== null &&
+            localStorage.getItem("backup_asm") !== null &&
+            localStorage.getItem("backup_date") !== null
         ) {
             env.$root.$emit("bv::show::modal", "copy")
         }
@@ -137,7 +137,7 @@ export function loadArchitecture(arch, root = document.app) {
     $.ajaxSetup({ async: false })
 
     $.get("architecture/" + arch.file + ".yml", cfg => {
-        newArchitectureLoad(cfg)
+        newArchitectureLoad(cfg, true)
 
         // store code to be edited
         // TODO: change this when migration w/ new core, we'll use YAMLs

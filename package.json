@@ -26,6 +26,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@replit/codemirror-vim": "^6.3.0",
     "@uiw/codemirror-themes": "^4.23.12",
+    "ansicolor": "^2.0.3",
     "apexcharts": "^4.7.0",
     "bootstrap": "^5.3.6",
     "bootstrap-vue-next": "^0.28.6",

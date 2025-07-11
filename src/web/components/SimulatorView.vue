@@ -29,10 +29,10 @@ import Monitor from "./simulator/Monitor.vue"
 import Keyboard from "./simulator/Keyboard.vue"
 
 import { architecture } from "@/core/core.mjs"
-import { instructions } from "@/core/compiler/compiler.mjs"
 
 export default {
   props: {
+    instructions: { type: Array, required: true },
     browser: String,
     os: { type: String, required: true },
     dark: { type: Boolean, required: true },
@@ -63,7 +63,6 @@ export default {
   data() {
     return {
       architecture,
-      instructions,
 
       // stack
       callee_subrutine: "",
