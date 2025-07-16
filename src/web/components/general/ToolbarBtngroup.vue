@@ -44,6 +44,7 @@ export default {
     instructions: Array,
     browser: { type: String, required: true },
     os: { type: String, required: true },
+    dark: { type: Boolean, required: true },
     architectures: { type: Array, required: true },
     show_instruction_help: { type: Boolean, default: false },
   },
@@ -122,7 +123,7 @@ export default {
 
   methods: {
     help_event(event) {
-      creator_ga('send', 'event', 'help', `help.${event}`, `help.${event}`)
+      creator_ga("send", "event", "help", `help.${event}`, `help.${event}`)
     },
 
     //
@@ -143,7 +144,7 @@ export default {
         // }
 
         // fast transition <any> => <any> - "architecture"
-        this.$root.creator_mode = e;
+        this.$root.creator_mode = e
 
         //Close all toast and refresh
         // this.$root.$bvToast.hide()
@@ -168,7 +169,6 @@ export default {
 
     //Compile assembly code
     assembly_compiler() {
-
       // reset simulator
       this.$root.keyboard = ""
       this.$root.display = ""
@@ -186,14 +186,13 @@ export default {
         resetStats()
 
         // Change buttons status
-        this.compiling = false;
-
+        this.compiling = false
 
         // show error/warning
         switch (ret.type) {
           case "error":
-            this.compile_error(ret.msg);
-            break;
+            this.compile_error(ret.msg)
+            break
 
           case "warning":
             show_notification(ret.token, ret.bgcolor)
@@ -201,7 +200,8 @@ export default {
 
           default:
             // put rowVariant in entrypoint (we assume the main label exists)
-            instructions.find(inst => inst.Label === "main")._rowVariant = "success"
+            instructions.find(inst => inst.Label === "main")._rowVariant =
+              "success"
             show_notification("Compilation completed successfully", "success")
             this.change_UI_mode("simulator")
             break
@@ -220,19 +220,19 @@ export default {
       this.change_UI_mode("assembly")
 
       // set compilation msg
-      this.$root.modalAssemblyError.error = msg;
+      this.$root.modalAssemblyError.error = msg
 
       // show assembly error modal
-      this.modalAssemblyError.show();
+      this.modalAssemblyError.show()
     },
 
     //Remove a loaded binary
     remove_library() {
-      update_binary = "";
-      load_binary = false;
-      $("#divAssembly").attr("class", "col-lg-12 col-sm-12");
-      $("#divTags").attr("class", "col-lg-0 col-sm-0");
-      $("#divTags").attr("class", "d-none");
+      update_binary = ""
+      load_binary = false
+      $("#divAssembly").attr("class", "col-lg-12 col-sm-12")
+      $("#divTags").attr("class", "col-lg-0 col-sm-0")
+      $("#divTags").attr("class", "d-none")
     },
 
     //
@@ -330,7 +330,7 @@ export default {
           $(".instructions_table").animate(
             { scrollTop: $(".instructions_table").height() },
             300,
-          );
+          )
         }
       }
     },
@@ -346,7 +346,7 @@ export default {
         warning: [],
         danger: [],
         flash: [],
-      };
+      }
 
       for (let i = 0; i < this.instructions.length; i++) {
         draw.space.push(i)
@@ -382,14 +382,14 @@ export default {
     // Execute one instruction
     execute_instruction() {
       // Google Analytics
-      creator_ga("execute", "execute.instruction", "execute.instruction");
+      creator_ga("execute", "execute.instruction", "execute.instruction")
 
-      set_execution_mode(0);
+      set_execution_mode(0)
 
-      const ret = step();
+      const ret = step()
 
       if (typeof ret === "undefined") {
-        console.log("Something weird happened :-S");
+        console.log("Something weird happened :-S")
       }
 
       if (ret.msg) {
@@ -403,15 +403,15 @@ export default {
 
     //Execute all program
     execute_program() {
-      let ret;
+      let ret
 
       // Google Analytics
-      creator_ga("execute", "execute.run", "execute.run");
+      creator_ga("execute", "execute.run", "execute.run")
 
       set_execution_mode(1)
 
       if (status.run_program === 0) {
-        status.run_program = 1;
+        status.run_program = 1
       }
 
       if (this.instructions.length === 0) {
@@ -441,7 +441,11 @@ export default {
     },
 
     execute_program_packed(ret) {
-      for (let i = 0; i < instructions_packed && status.execution_index >= 0; i++) {
+      for (
+        let i = 0;
+        i < instructions_packed && status.execution_index >= 0;
+        i++
+      ) {
         if (
           status.run_program === 0 || // stop button pressed
           status.run_program === 3 || // wait for user input at keyboard
@@ -460,17 +464,17 @@ export default {
           if (instructions[status.execution_index].Break === true) {
             status.run_program = 2 //In case breakpoint --> stop
           }
-          return;
+          return
         } else {
           if (status.run_program === 2) {
-            status.run_program = 1;
+            status.run_program = 1
           }
 
-          ret = step();
+          ret = step()
 
           if (typeof ret === "undefined") {
-            console.log("Something weird happened :-S");
-            status.run_program = 0;
+            console.log("Something weird happened :-S")
+            status.run_program = 0
 
             this.execution_UI_update(ret)
 
@@ -481,7 +485,7 @@ export default {
             this.stop_disable = true
             this.$root.main_memory_busy = false
 
-            return;
+            return
           }
 
           if (ret.msg !== null) {
@@ -517,7 +521,7 @@ export default {
 
     //Stop program excution
     stop_execution() {
-      status.run_program = 0;
+      status.run_program = 0
 
       //Change buttons status
       this.reset_disable = false
@@ -527,7 +531,7 @@ export default {
       this.$root.main_memory_busy = false
     },
   },
-};
+}
 </script>
 
 <template>
@@ -541,16 +545,15 @@ export default {
         <!-- button_architecture -->
         <b-dropdown
           v-if="item === 'btn_architecture'"
-          menu-class="menuButton"
           variant="outline-secondary"
+          :toggle-class="{ menuButton: !dark, menuButtonDark: dark }"
+          :split-class="{ menuButton: !dark, menuButtonDark: dark }"
           split
           right
           size="sm"
         >
           <template #button-content>
-            <span @click="change_UI_mode('architecture')">
-              Architecture
-            </span>
+            <span @click="change_UI_mode('architecture')"> Architecture </span>
           </template>
 
           <b-dropdown-item-button
@@ -618,7 +621,9 @@ export default {
           v-if="item === 'dropdown_assembly_file'"
           text="File"
           size="sm"
-          class="menuButton d-grid gap-2"
+          class="d-grid gap-2"
+          :toggle-class="{ menuButton: !dark, menuButtonDark: dark }"
+          :split-class="{ menuButton: !dark, menuButtonDark: dark }"
           variant="outline-secondary"
         >
           <b-dropdown-item @click="new_assembly">
@@ -662,7 +667,9 @@ export default {
           v-if="item === 'dropdown_library'"
           text="Library"
           size="sm"
-          class="menuButton d-grid gap-2"
+          class="d-grid gap-2"
+          :toggle-class="{ menuButton: !dark, menuButtonDark: dark }"
+          :split-class="{ menuButton: !dark, menuButtonDark: dark }"
           variant="outline-secondary"
         >
           <b-dropdown-item v-b-modal.save_binary>
@@ -683,7 +690,7 @@ export default {
         <b-tooltip v-if="item === 'btn_reset'">
           <template #target>
             <b-button
-              class="actionsGroup h-100 mr-1 text-truncate"
+              class="actionsGroup h-100 text-truncate"
               size="sm"
               variant="outline-secondary"
               accesskey="x"
@@ -702,7 +709,7 @@ export default {
         <b-tooltip v-if="item === 'btn_instruction'">
           <template #target>
             <b-button
-              class="actionsGroup h-100 mr-1 text-truncate"
+              class="actionsGroup h-100 text-truncate"
               size="sm"
               variant="outline-secondary"
               accesskey="a"
@@ -722,7 +729,7 @@ export default {
           <template #target>
             <b-button
               id="playExecution"
-              class="actionsGroup h-100 mr-1 text-truncate"
+              class="actionsGroup h-100 text-truncate"
               size="sm"
               variant="outline-secondary"
               @click="execute_program"
@@ -740,7 +747,7 @@ export default {
         <!-- button_flash -->
         <b-button
           v-if="item === 'btn_flash'"
-          class="actionsGroup h-100 mr-1"
+          class="actionsGroup h-100"
           size="sm"
           variant="outline-secondary"
           v-b-modal.flash
@@ -754,7 +761,7 @@ export default {
         <b-tooltip v-if="item === 'btn_stop'">
           <template #target>
             <b-button
-              class="actionsGroup h-100 mr-1"
+              class="actionsGroup h-100"
               size="sm"
               variant="outline-secondary"
               accesskey="c"
@@ -773,7 +780,7 @@ export default {
         <!-- button_examples -->
         <b-button
           v-if="item == 'btn_examples'"
-          class="menuButton h-100 mr-1 text-truncate"
+          class="menuButton h-100 text-truncate"
           size="sm"
           variant="outline-secondary"
           v-b-modal.examples2
@@ -797,7 +804,7 @@ export default {
         <!-- button_configuration -->
         <b-button
           v-if="item == 'btn_configuration'"
-          class="menuButton h-100 mr-1 text-truncate"
+          class="menuButton h-100 text-truncate"
           size="sm"
           variant="outline-secondary"
           id="conf_btn_sim"
@@ -871,10 +878,29 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+@import "bootstrap/scss/bootstrap";
+
+// scoped makes classes not work on b-dropdown, a workaround is to use
+// `:deep(.my-class)`, but it doesn't work well with themes: if we apply the
+// `:deep` selector a theme, it will affect the rest, so it doesn't work
+// (see https://github.com/bootstrap-vue-next/bootstrap-vue-next/issues/2774)
+
+// the workaround to the workaround is to just use class bindings
+
+:deep(.menuButton),
 .menuButton {
-  background-color: #fafafa;
-  color: #6c757d;
+  background-color: #f8f9fa;
 }
+:deep(.menuButtonDark),
+.menuButtonDark {
+  background-color: #212529;
+  color: $secondary;
+}
+:deep(.menuButtonDark:hover),
+.menuButtonDark:hover {
+  background-color: #424649;
+}
+
 .actionsGroup {
   background-color: #e0e0e0;
 }
@@ -886,13 +912,12 @@ export default {
 [data-bs-theme="dark"] {
   .menuButton {
     background-color: #212529;
-    color: #818a8d;
+    color: $secondary;
   }
   .menuButton:hover {
-    // background-color: #6c757d;
-    // color: white;
     background-color: #424649;
   }
+
   .actionsGroup {
     background-color: #363636;
   }
@@ -902,7 +927,7 @@ export default {
   }
   .infoButton {
     background-color: #a3a815;
-    color: white;
+    color: #f5f5f5;
   }
   .infoButton:hover {
     background-color: #424649;
