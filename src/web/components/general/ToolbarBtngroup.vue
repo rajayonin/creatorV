@@ -34,7 +34,7 @@ import { step, packExecute } from "@/core/executor/executor.mjs"
 import { creator_ga } from "@/core/utils/creator_ga.mjs"
 import {
   show_notification,
-  loadArchitecture,
+  loadDefaultArchitecture,
   storeBackup,
 } from "@/web/utils.mjs"
 
@@ -45,7 +45,7 @@ export default {
     browser: { type: String, required: true },
     os: { type: String, required: true },
     dark: { type: Boolean, required: true },
-    architectures: { type: Array, required: true },
+    architectures: { type: Array, required: false },
     show_instruction_help: { type: Boolean, default: false },
   },
 
@@ -67,7 +67,7 @@ export default {
   },
   computed: {
     arch_available() {
-      return this.architectures.filter(item => item.available === 1)
+      return this.architectures.filter(a => a.available)
     },
 
     instruction_values: {
@@ -156,7 +156,7 @@ export default {
     //
 
     load_arch_select(arch) {
-      loadArchitecture(arch)
+      loadDefaultArchitecture(arch)
     },
 
     //
