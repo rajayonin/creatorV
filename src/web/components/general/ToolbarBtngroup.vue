@@ -228,9 +228,11 @@ export default {
           break
 
         default:
-          // put rowVariant in entrypoint (we assume the main label exists)
-          instructions.find(inst => inst.Label === "main")._rowVariant =
-            "success"
+          // put rowVariant in entrypoint
+          const main_inst = instructions.find(inst => inst.Label === "main")
+          if (main_inst) {
+            main_inst._rowVariant = "success"
+          }
           show_notification("Compilation completed successfully", "success")
           this.change_UI_mode("simulator")
           break
