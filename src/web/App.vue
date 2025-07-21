@@ -38,7 +38,7 @@ import {
 import { set_debug } from "@/core/core.mjs"
 import { stats } from "@/core/executor/stats.mts"
 
-import { instructions } from "@/core/compiler/compiler.mjs"
+import { instructions } from "@/core/assembler/assembler.mjs"
 
 import SpinnerLoading from "./components/general/SpinnerLoading.vue"
 import SupportedBrowsers from "./components/general/SupportedBrowsers.vue"

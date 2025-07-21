@@ -21,7 +21,7 @@
 
 import { architecture, REGISTERS } from "../core.mjs";
 import { crex_show_notification } from "../executor/executor.mjs";
-import { tag_instructions } from "../compiler/compiler.mjs";
+import { tag_instructions } from "../assembler/assembler.mjs";
 import {
     creator_callstack_enter,
     creator_callstack_leave,

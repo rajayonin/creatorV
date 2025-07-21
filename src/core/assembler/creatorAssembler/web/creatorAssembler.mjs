@@ -19,7 +19,7 @@
  *
  */
 
-import { assembly_compiler_base } from "../creatorCompilerBase.mjs";
+import { assembleCreatorBase } from "../creatorAssemblerBase.mjs";
 
 import wasm_web_init, {
     ArchitectureJS,
@@ -32,7 +32,7 @@ import wasm_web_init, {
  * @param {boolean} library - Whether this is a library compilation
  * @returns {Object} Compilation result
  */
-export async function assembly_compiler_default(code, library) {
+export async function assembleCreator(code, library) {
     // In the web, we MUST call the default WASM initialization
     await wasm_web_init();
 
@@ -43,5 +43,5 @@ export async function assembly_compiler_default(code, library) {
     };
 
     // Call the common base implementation
-    return assembly_compiler_base(code, library, wasmModules);
+    return assembleCreatorBase(code, library, wasmModules);
 }

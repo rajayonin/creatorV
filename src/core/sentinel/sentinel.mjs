@@ -20,7 +20,7 @@
  */
 
 import { architecture, REGISTERS } from "../core.mjs";
-import { address } from "../compiler/compiler.mjs";
+import { address } from "../assembler/assembler.mjs";
 import { console_log } from "../utils/creator_logger.mjs";
 
 /*

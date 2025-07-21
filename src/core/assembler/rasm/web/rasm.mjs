@@ -61,7 +61,7 @@ function parseSourceLineMapping(rawRasmOutput) {
 }
 
 // eslint-disable-next-line max-lines-per-function
-export async function assembly_compiler_rasm(code) {
+export async function rasmAssemble(code) {
     // Re-initialize WASM module every time
     let rasmModule;
     const result = {

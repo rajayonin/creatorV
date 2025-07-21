@@ -29,7 +29,7 @@ import {
     instructions,
     precomputeInstructions,
     setInstructions,
-} from "./compiler/compiler.mjs";
+} from "./assembler/assembler.mjs";
 import { Memory } from "./memory/Memory.mts";
 import yaml from "js-yaml";
 import { crex_findReg } from "./register/registerLookup.mjs";

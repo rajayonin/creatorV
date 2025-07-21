@@ -69,6 +69,12 @@ bun format
   bun simtest --arch riscv
   ```
 
+### Backend RPC Server
+
+This project includes a JSON RPC server that exposes the CREATOR emulator's core functionalities.
+
+For more details, see the [RPC Server README](src/rpc/README.md).
+
 
 ### VS Code Setup
 The recommended extensions are:

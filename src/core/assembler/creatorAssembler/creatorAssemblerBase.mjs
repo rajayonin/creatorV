@@ -38,7 +38,7 @@ import {
     setAddress,
     setInstructions,
     formatErrorWithColors,
-} from "../compiler.mjs";
+} from "../assembler.mjs";
 import { logger } from "../../utils/creator_logger.mjs";
 
 let instructions_binary = [];
@@ -51,7 +51,7 @@ let instructions_binary = [];
  * @returns {Object} Compilation result
  */
 // eslint-disable-next-line max-lines-per-function
-export function assembly_compiler_base(code, library, wasmModules) {
+export function assembleCreatorBase(code, library, wasmModules) {
     /* Google Analytics */
     creator_ga("compile", "compile.assembly");
     const color = 1;

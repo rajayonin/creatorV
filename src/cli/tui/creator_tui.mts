@@ -7,7 +7,7 @@ import * as creator from "../../core/core.mjs";
 import { step } from "../../core/executor/executor.mjs";
 import { decode_instruction } from "../../core/executor/decoder.mjs";
 import { logger } from "../../core/utils/creator_logger.mjs";
-import { instructions } from "../../core/compiler/compiler.mjs";
+import { instructions } from "../../core/assembler/assembler.mjs";
 import {
     track_stack_getFrames,
     track_stack_getNames,

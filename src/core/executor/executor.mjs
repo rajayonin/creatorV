@@ -18,7 +18,7 @@
  *  along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { instructions, tag_instructions } from "../compiler/compiler.mjs";
+import { instructions, tag_instructions } from "../assembler/assembler.mjs";
 import {
     status,
     WORDSIZE,

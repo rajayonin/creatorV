@@ -26,7 +26,7 @@ import { console_log } from "../utils/creator_logger.mjs";
 // --------------------------------------------------------------
 // These can be used used by the eval in buildInstructionPreload, but the linter doesn't know that
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { instructions } from "../compiler/compiler.mjs";
+import { instructions } from "../assembler/assembler.mjs";
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     readRegister,

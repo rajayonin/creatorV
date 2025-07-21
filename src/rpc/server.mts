@@ -5,33 +5,33 @@
  * exposing key functionality for VSCode extension integration.
  */
 
-import * as creator from "../src/core/core.mjs";
-import { step } from "../src/core/executor/executor.mjs";
-import { readRegister } from "../src/core/register/registerOperations.mjs";
+import * as creator from "../core/core.mjs";
+import { step } from "../core/executor/executor.mjs";
+import { readRegister } from "../core/register/registerOperations.mjs";
 import {
     crex_findReg_bytag,
     crex_findReg,
-} from "../src/core/register/registerLookup.mjs";
-import { logger } from "../src/core/utils/creator_logger.mjs";
-import { instructions } from "../src/core/compiler/compiler.mjs";
-import { assembly_compiler_sjasmplus } from "../src/core/compiler/sjasmplus/deno/sjasmplus.mjs";
-import { assembly_compiler_default } from "../src/core/compiler/creatorCompiler/deno/creatorCompiler.mjs";
-import { assembly_compiler_rasm } from "../src/core/compiler/rasm/deno/rasm.mjs";
+} from "../core/register/registerLookup.mjs";
+import { logger } from "../core/utils/creator_logger.mjs";
+import { instructions } from "../core/assembler/assembler.mjs";
+import { sjasmplusAssemble } from "../core/assembler/sjasmplus/deno/sjasmplus.mjs";
+import { assembleCreator } from "../core/assembler/creatorAssembler/deno/creatorAssembler.mjs";
+import { rasmAssemble } from "../core/assembler/rasm/deno/rasm.mjs";
 import {
     track_stack_getFrames,
     track_stack_getNames,
     track_stack_getAllHints,
-} from "../src/core/memory/stackTracker.mjs";
+} from "../core/memory/stackTracker.mjs";
 import fs from "node:fs";
 
 // Compiler map similar to CLI version
-const compiler_map = {
-    default: assembly_compiler_default,
-    sjasmplus: assembly_compiler_sjasmplus,
-    rasm: assembly_compiler_rasm,
+const assembler_map = {
+    default: assembleCreator,
+    sjasmplus: sjasmplusAssemble,
+    rasm: rasmAssemble,
 } as const;
 
-type CompilerType = keyof typeof compiler_map;
+type CompilerType = keyof typeof assembler_map;
 
 // JSON RPC Types
 interface JsonRpcRequest {
@@ -183,10 +183,10 @@ class CreatorRpcServer {
             );
             // Get compiler function from the map, with type safety
             const compilerKey =
-                params.compiler && params.compiler in compiler_map
+                params.compiler && params.compiler in assembler_map
                     ? (params.compiler as CompilerType)
                     : "default";
-            const compilerFunction = compiler_map[compilerKey];
+            const compilerFunction = assembler_map[compilerKey];
 
             const result = (await creator.assembly_compile(
                 params.assembly,

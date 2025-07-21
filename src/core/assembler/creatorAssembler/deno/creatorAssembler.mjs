@@ -19,7 +19,7 @@
  *
  */
 
-import { assembly_compiler_base } from "../creatorCompilerBase.mjs";
+import { assembleCreatorBase } from "../creatorAssemblerBase.mjs";
 
 import { ArchitectureJS, DataCategoryJS } from "./wasm/creator_compiler.js";
 
@@ -30,7 +30,7 @@ import { ArchitectureJS, DataCategoryJS } from "./wasm/creator_compiler.js";
  * @param {boolean} library - Whether this is a library compilation
  * @returns {Object} Compilation result
  */
-export function assembly_compiler_default(code, library) {
+export function assembleCreator(code, library) {
     // Prepare WASM modules for the base compiler
     const wasmModules = {
         ArchitectureJS,
@@ -38,5 +38,5 @@ export function assembly_compiler_default(code, library) {
     };
 
     // Call the common base implementation
-    return assembly_compiler_base(code, library, wasmModules);
+    return assembleCreatorBase(code, library, wasmModules);
 }

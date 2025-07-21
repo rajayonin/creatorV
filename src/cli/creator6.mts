@@ -7,7 +7,7 @@ import { decode_instruction } from "../core/executor/decoder.mjs";
 import process from "node:process";
 import { logger } from "../core/utils/creator_logger.mjs";
 import readline from "node:readline";
-import { instructions } from "../core/compiler/compiler.mjs";
+import { instructions } from "../core/assembler/assembler.mjs";
 import {
     track_stack_getFrames,
     track_stack_getNames,
@@ -18,9 +18,9 @@ import yaml from "js-yaml";
 import path from "node:path";
 import { displayHelp } from "./utils.mts";
 import { Buffer } from "node:buffer";
-import { assembly_compiler_sjasmplus } from "../core/compiler/sjasmplus/deno/sjasmplus.mjs";
-import { assembly_compiler_default } from "../core/compiler/creatorCompiler/deno/creatorCompiler.mjs";
-import { assembly_compiler_rasm } from "../core/compiler/rasm/deno/rasm.mjs";
+import { sjasmplusAssemble } from "../core/assembler/sjasmplus/deno/sjasmplus.mjs";
+import { assembleCreator } from "../core/assembler/creatorAssembler/deno/creatorAssembler.mjs";
+import { rasmAssemble } from "../core/assembler/rasm/deno/rasm.mjs";
 
 const MAX_INSTRUCTIONS = 10000000000;
 const CLI_VERSION = "0.1.0";
@@ -353,10 +353,10 @@ function loadLibrary(filePath: string) {
     creator.load_library(libraryFile);
     console.log("Library loaded successfully.");
 }
-const compiler_map = {
-    default: assembly_compiler_default,
-    sjasmplus: assembly_compiler_sjasmplus,
-    rasm: assembly_compiler_rasm,
+const assembler_map = {
+    default: assembleCreator,
+    sjasmplus: sjasmplusAssemble,
+    rasm: rasmAssemble,
 };
 async function assemble(filePath: string, compiler?: string) {
     if (!filePath) {
@@ -365,10 +365,10 @@ async function assemble(filePath: string, compiler?: string) {
     }
     // get function from the compiler map, with type safety
     const compilerKey =
-        compiler && compiler in compiler_map
-            ? (compiler as keyof typeof compiler_map)
+        compiler && compiler in assembler_map
+            ? (compiler as keyof typeof assembler_map)
             : "default";
-    const compilerFunction = compiler_map[compilerKey];
+    const compilerFunction = assembler_map[compilerKey];
     const assemblyFile = fs.readFileSync(filePath, "utf8");
     const ret: ReturnType = await creator.assembly_compile(
         assemblyFile,

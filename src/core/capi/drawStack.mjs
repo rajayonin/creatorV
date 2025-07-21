@@ -21,7 +21,7 @@
 
 import { REGISTERS } from "../core.mjs";
 import { crex_show_notification } from "../executor/executor.mjs";
-import { tag_instructions } from "../compiler/compiler.mjs";
+import { tag_instructions } from "../assembler/assembler.mjs";
 import {
     track_stack_enter,
     track_stack_leave,
