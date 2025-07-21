@@ -38,7 +38,7 @@ import {
   storeBackup,
 } from "@/web/utils.mjs"
 import { rasmAssemble } from "@/core/assembler/rasm/web/rasm.mjs"
-import { assembly_cassembleCreator/core/assembler/creatorAssembler/web/creatorAssembler.mjs"
+import { assembleCreator } from "@/core/assembler/creatorAssembler/web/creatorAssembler.mjs"
 
 export default {
   props: {
@@ -71,7 +71,8 @@ export default {
         { value: "rasm", text: "RASM" },
       ],
       assembler_map: {
-        default: assembly_assembleCreator rasm:rasmAssemblem,
+        default: assembleCreator,
+        rasm: rasmAssemble,
       },
     }
   },

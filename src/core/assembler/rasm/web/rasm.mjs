@@ -25,7 +25,7 @@ import {
     precomputeInstructions,
     set_tag_instructions,
     formatErrorWithColors,
-} from "../../compiler.mjs";
+} from "../../assembler.mjs";
 import { parseDebugSymbolsRASM, toTagInstructions } from "../utils.mjs";
 
 /**
