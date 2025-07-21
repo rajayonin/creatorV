@@ -605,7 +605,7 @@ export default {
           id="assembly_btn_sim"
           @click="change_UI_mode('assembly')"
         >
-          <font-awesome-icon icon="fa-solid fa-hashtag" />
+          <font-awesome-icon :icon="['fas', 'hashtag']" />
           Assembly
         </b-button>
 
@@ -618,7 +618,7 @@ export default {
           id="sim_btn_arch"
           @click="change_UI_mode('simulator')"
         >
-          <font-awesome-icon icon="fa-cogs" />
+          <font-awesome-icon :icon="['fas', 'gears']" />
           Simulator
         </b-button>
 
@@ -631,7 +631,7 @@ export default {
           id="edit_btn_arch"
           v-b-modal.edit_architecture
         >
-          <font-awesome-icon icon="fa-pen-to-square" />
+          <font-awesome-icon :icon="['fas', 'pen-to-square']" />
           Edit Architecture
         </b-button>
 
@@ -644,7 +644,7 @@ export default {
           id="save_btn_arch"
           v-b-modal.save_architecture
         >
-          <font-awesome-icon icon="fa-download" />
+          <font-awesome-icon :icon="['fas', 'download']" />
           Save Architecture
         </b-button>
 
@@ -659,23 +659,23 @@ export default {
           variant="outline-secondary"
         >
           <b-dropdown-item @click="new_assembly">
-            <font-awesome-icon icon="fa-file" />
+            <font-awesome-icon :icon="['far', 'file']" />
             New
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.load_assembly>
-            <font-awesome-icon icon="fa-upload" />
+            <font-awesome-icon :icon="['fas', 'upload']" />
             Load
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.save_assembly>
-            <font-awesome-icon icon="fa-download" />
+            <font-awesome-icon :icon="['fas', 'download']" />
             Save
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.examples>
-            <font-awesome-icon icon="fa-regular fa-file" />
+            <font-awesome-icon :icon="['fas', 'file-lines']" />
             Examples
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.make_uri>
-            <font-awesome-icon icon="fa-link" />
+            <font-awesome-icon :icon="['fas', 'link']" />
             Get code as URI
           </b-dropdown-item>
         </b-dropdown>
@@ -698,7 +698,7 @@ export default {
         >
           <template #button-content>
             <span @click="assembly_compiler">
-              <font-awesome-icon icon="fa-sign-in-alt" />
+              <font-awesome-icon :icon="['fas', 'right-to-bracket']" />
               {{
                 "Assemble" +
                 (selectedCompilerLabel
@@ -729,15 +729,15 @@ export default {
           variant="outline-secondary"
         >
           <b-dropdown-item v-b-modal.save_binary>
-            <font-awesome-icon icon="fa-plus-square" />
+            <font-awesome-icon :icon="['fas', 'square-plus']" />
             Create
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.load_binary>
-            <font-awesome-icon icon="fa-upload" />
+            <font-awesome-icon :icon="['fas', 'upload']" />
             Load Library
           </b-dropdown-item>
           <b-dropdown-item @click="remove_library">
-            <font-awesome-icon icon="fa-trash-alt" />
+            <font-awesome-icon :icon="['fas', 'trash-can']" />
             Remove
           </b-dropdown-item>
         </b-dropdown>
@@ -753,7 +753,7 @@ export default {
               @click="reset(true)"
               :disabled="reset_disable"
             >
-              <font-awesome-icon icon="fa-power-off" />
+              <font-awesome-icon :icon="['fas', 'power-off']" />
               Reset
             </b-button>
           </template>
@@ -772,7 +772,7 @@ export default {
               @click="execute_instruction"
               :disabled="instruction_disable"
             >
-              <font-awesome-icon icon="fa-fast-forward" />
+              <font-awesome-icon :icon="['fas', 'forward-step']" />
               Inst.
             </b-button>
           </template>
@@ -792,7 +792,7 @@ export default {
               accesskey="r"
               :disabled="run_disable"
             >
-              <font-awesome-icon icon="fa-play" />
+              <font-awesome-icon :icon="['fas', 'play']" />
               Run
             </b-button>
           </template>
@@ -809,7 +809,7 @@ export default {
           v-b-modal.flash
           :disabled="run_disable"
         >
-          <font-awesome-icon icon="fa-brands fa-usb" />
+          <font-awesome-icon :icon="['fab', 'usb']" />
           Flash
         </b-button>
 
@@ -825,7 +825,7 @@ export default {
               :disabled="stop_disable"
               id="stop_execution"
             >
-              <font-awesome-icon icon="fa-stop" />
+              <font-awesome-icon :icon="['fas', 'stop']" />
               Stop
             </b-button>
           </template>
@@ -841,7 +841,7 @@ export default {
           variant="outline-secondary"
           v-b-modal.examples2
         >
-          <font-awesome-icon icon="fa-regular fa-file" />
+          <font-awesome-icon :icon="['fas', 'file-lines']" />
           Examples
         </b-button>
 
@@ -853,7 +853,7 @@ export default {
           variant="outline-secondary"
           v-b-modal.calculator
         >
-          <font-awesome-icon icon="fa-calculator" />
+          <font-awesome-icon :icon="['fas', 'calculator']" />
           Calculator
         </b-button>
 
@@ -866,7 +866,7 @@ export default {
           id="conf_btn_sim"
           v-b-modal.configuration
         >
-          <font-awesome-icon icon="fa-cogs" />
+          <font-awesome-icon :icon="['fas', 'gears']" />
           Configuration
         </b-button>
 
@@ -886,7 +886,7 @@ export default {
               variant="outline-secondary"
               id="info"
             >
-              <font-awesome-icon icon="fa-info-circle" />
+              <font-awesome-icon :icon="['fas', 'circle-info']" />
               Info
             </b-button>
           </template>
@@ -900,7 +900,7 @@ export default {
               variant="outline-secondary"
               @click="help_event('general_help')"
             >
-              <font-awesome-icon icon="fa-question-circle" />
+              <font-awesome-icon :icon="['fas', 'circle-question']" />
               Help
             </b-button>
 
@@ -913,7 +913,7 @@ export default {
               variant="outline-secondary"
               @click="help_event('instruction_help')"
             >
-              <font-awesome-icon icon="fa-book" />
+              <font-awesome-icon :icon="['fas', 'book']" />
               Instruction Help
             </b-button>
 
@@ -923,8 +923,8 @@ export default {
               variant="outline-secondary"
               v-b-modal.notifications
             >
-              <font-awesome-icon icon="fa-bell" />
-              Show Notifications
+              <font-awesome-icon :icon="['fas', 'bell']" />
+              Notifications
             </b-button>
           </div>
         </b-popover>
