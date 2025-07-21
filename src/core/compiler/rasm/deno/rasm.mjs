@@ -1,6 +1,6 @@
-/*
+/**
  *  Copyright 2018-2025 Felix Garcia Carballeira, Alejandro Calderon Mateos,
- *  Diego Camarmas Alonso, Jorge Ramos Santana
+ *                      Diego Camarmas Alonso, Jorge Ramos Santana
  *
  *  This file is part of CREATOR.
  *
@@ -62,7 +62,7 @@ function parseSourceLineMapping(rawRasmOutput) {
     return sourceMap;
 }
 
-// eslint-disable-next-line max-lines-per-function
+ 
 export function assembly_compiler_rasm(code) {
     // --- Setup temporary files ---
     const filename = "program";

@@ -68,18 +68,20 @@ export default {
       selectedCompiler: "default",
       compilerOptions: [
         { value: "default", text: "CREATOR" },
-        { value: "rasm", text: "RASM" }
+        { value: "rasm", text: "RASM" },
       ],
       compiler_map: {
         default: assembly_compiler_default,
         rasm: assembly_compiler_rasm,
       },
-    };
+    }
   },
   computed: {
     selectedCompilerLabel() {
-      const found = this.compilerOptions.find(opt => opt.value === this.selectedCompiler);
-      return found ? found.text : "";
+      const found = this.compilerOptions.find(
+        opt => opt.value === this.selectedCompiler,
+      )
+      return found ? found.text : ""
     },
     arch_available() {
       return this.architectures.filter(a => a.available)
@@ -184,7 +186,6 @@ export default {
 
     //Compile assembly code
     async assembly_compiler() {
-
       // reset simulator
       this.$root.keyboard = ""
       this.$root.display = ""
@@ -200,41 +201,41 @@ export default {
       //   code_assembly = textarea_assembly_editor.getValue()
       // }
       // Select compiler function
-      const compilerFn = this.compiler_map[this.selectedCompiler];
+      const compilerFn = this.compiler_map[this.selectedCompiler]
       // If default, let assembly_compile use its internal default
       const ret = await (compilerFn
         ? assembly_compile(this.$root.assembly_code, compilerFn)
-        : assembly_compile(this.$root.assembly_code));
+        : assembly_compile(this.$root.assembly_code))
 
       /* Reset stats */
 
       resetStats()
 
-      status.executedInstructions = 0;
-      status.clkCycles = 0;
+      status.executedInstructions = 0
+      status.clkCycles = 0
 
-        // Change buttons status
-        this.compiling = false
+      // Change buttons status
+      this.compiling = false
 
-        // show error/warning
-        switch (ret.type) {
-          case "error":
-            this.compile_error(ret.msg)
-            break
+      // show error/warning
+      switch (ret.type) {
+        case "error":
+          this.compile_error(ret.msg)
+          break
 
         case "warning":
           show_notification(ret.token, ret.bgcolor)
           break
 
-          default:
-            // put rowVariant in entrypoint (we assume the main label exists)
-            instructions.find(inst => inst.Label === "main")._rowVariant =
-              "success"
-            show_notification("Compilation completed successfully", "success")
-            this.change_UI_mode("simulator")
-            break
-        }
-        this.compiling = false
+        default:
+          // put rowVariant in entrypoint (we assume the main label exists)
+          instructions.find(inst => inst.Label === "main")._rowVariant =
+            "success"
+          show_notification("Compilation completed successfully", "success")
+          this.change_UI_mode("simulator")
+          break
+      }
+      this.compiling = false
 
       // Close all toast
       // app.$bvToast.hide()
