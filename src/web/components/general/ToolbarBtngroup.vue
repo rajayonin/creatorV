@@ -229,6 +229,7 @@ export default {
 
         default:
           // put rowVariant in entrypoint
+          // TODO: use PC, or entrypoint label defined in architecture
           const main_inst = instructions.find(inst => inst.Label === "main")
           if (main_inst) {
             main_inst._rowVariant = "success"
