@@ -24,6 +24,7 @@ import { CHECK_STACK } from "./checkStack.mjs";
 import { DRAW_STACK } from "./drawStack.mjs";
 import { FP } from "./fp.mjs";
 import { RISCV } from "./arch/riscv.mjs";
+import { Z80 } from "./arch/z80.mjs";
 
 // Export all CAPI functions and make them globally available
 export function initCAPI() {
@@ -35,6 +36,8 @@ export function initCAPI() {
         DRAW_STACK,
         FP,
         RISCV,
+        Z80,
+
     };
 
     // Make CAPI available as a global object

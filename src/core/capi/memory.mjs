@@ -161,22 +161,26 @@ function readValueFromMemory(addr, bytes) {
  */
 // Memory operations
 export const MEM = {
-    write (address, bytes, value, reg_name, hint) {
+    write(address, bytes, value, reg_name, hint, noSegFault = true) {
         // Check if the address is in a writable segment using memory functions
         const segment = main_memory.getSegmentForAddress(address);
-        if (segment === "text") {
-            raise("Segmentation fault. You tried to write in the text segment");
-            creator_executor_exit(true);
-        }
+        if (!noSegFault) {
+            if (segment === "text") {
+                raise(
+                    "Segmentation fault. You tried to write in the text segment",
+                );
+                creator_executor_exit(true);
+            }
 
-        // Validate that write access is allowed for this address
-        if (!main_memory.isValidAccess(address, "write")) {
-            raise(
-                "Segmentation fault. Write access denied for address '0x" +
-                    address.toString(16) +
-                    "'",
-            );
-            creator_executor_exit(true);
+            // Validate that write access is allowed for this address
+            if (!main_memory.isValidAccess(address, "write")) {
+                raise(
+                    "Segmentation fault. Write access denied for address '0x" +
+                        address.toString(16) +
+                        "'",
+                );
+                creator_executor_exit(true);
+            }
         }
 
         let byteArray;
@@ -222,27 +226,30 @@ export const MEM = {
         creator_callstack_newWrite(i, j, address, byteArray.length);
     },
 
-    read (addr, bytes, reg_name) {
+    read(addr, bytes, reg_name, noSegFault = true) {
         // Implementation of capi_mem_read
         let val = 0n;
 
-        // Check if the address is in a readable segment using memory functions
-        const segment = main_memory.getSegmentForAddress(addr);
-        if (segment === "text") {
-            raise("Segmentation fault. You tried to read in the text segment");
-            creator_executor_exit(true);
-        }
+        if (!noSegFault) {
+            // Check if the address is in a readable segment using memory functions
+            const segment = main_memory.getSegmentForAddress(addr);
+            if (segment === "text") {
+                raise(
+                    "Segmentation fault. You tried to read in the text segment",
+                );
+                creator_executor_exit(true);
+            }
 
-        // Validate that read access is allowed for this address
-        if (!main_memory.isValidAccess(addr, "read")) {
-            raise(
-                "Segmentation fault. Read access denied for address '0x" +
-                    addr.toString(16) +
-                    "'",
-            );
-            creator_executor_exit(true);
+            // Validate that read access is allowed for this address
+            if (!main_memory.isValidAccess(addr, "read")) {
+                raise(
+                    "Segmentation fault. Read access denied for address '0x" +
+                        addr.toString(16) +
+                        "'",
+                );
+                creator_executor_exit(true);
+            }
         }
-
         try {
             val = readValueFromMemory(addr, bytes);
         } catch (_e) {
@@ -277,7 +284,7 @@ export const MEM = {
      * @param {number} [sizeInBits] - Optional size of the type in bits (e.g., 64 for double, 32 for int32)
      * @returns {boolean} - True if the hint was successfully added
      */
-    addHint (address, hint, sizeInBits) {
+    addHint(address, hint, sizeInBits) {
         try {
             main_memory.addHint(address, "", hint, sizeInBits);
             return true;
