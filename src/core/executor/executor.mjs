@@ -43,6 +43,8 @@ import { buildInstructionPreload } from "./preload.mjs";
 import { show_notification } from "@/web/utils.mjs";
 import { updateStats } from "./stats.mts";
 
+const instructionCache = new Map();
+
 export function packExecute(error, err_msg, err_type, draw) {
     const ret = {};
 
@@ -254,64 +256,89 @@ function executeInstructionAndHandlePC(draw, preloadFunction) {
 /**
  * Processes the current instruction (fetch, decode, execute)
  * @param {Object} draw - The drawing object for UI updates
+ * @param {boolean} enableCache - A flag to enable or disable the instruction cache.
  * @returns {Object|null} - Returns execution result object if execution should stop, or null to continue
  */
-function processCurrentInstruction(draw) {
+function processCurrentInstruction(draw, enableCache = true) {
     // 1. Fetch
     // When fetching, we could have an instruction that spans multiple words,
     // so to make sure we always get the full instruction, we read however many
     // words the longest instruction needs (MAXNWORDS).
 
     let pc_address = getPC();
+    let instruction;
+    let asm;
+    let machineCode;
+    let preloadFunction;
 
-    const words = [];
-    for (let i = 0; i < MAXNWORDS; i++) {
-        // Read the word at the current PC address
-        const wordBytes = main_memory.readWord(pc_address);
-        const word = Array.from(new Uint8Array(wordBytes))
-            .map(byte => byte.toString(16).padStart(2, "0"))
-            .join("");
+    // Check for instruction in cache only if caching is enabled
+    if (enableCache && instructionCache.has(pc_address)) {
+        // If instruction is already cached, retrieve it
+        ({ instruction, asm, machineCode, preloadFunction } =
+            instructionCache.get(pc_address));
+        // Increment PC based on instruction size
+        incrementProgramCounter(instruction.nwords);
+    } else {
+        // This block executes if cache is disabled OR if it's a cache miss.
+        const words = [];
+        const word_size_in_bytes = BigInt(WORDSIZE / BYTESIZE);
 
-        words.push(word);
-        // Increment the PC address by the word size
-        pc_address += BigInt(WORDSIZE / BYTESIZE);
+        for (let i = 0; i < MAXNWORDS; i++) {
+            // Calculate the target address based on the original pc_address and the loop index
+            const target_address = pc_address + BigInt(i) * word_size_in_bytes;
+
+            // Read the word at the calculated address
+            const wordBytes = main_memory.readWord(target_address);
+            const word = Array.from(new Uint8Array(wordBytes))
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+
+            words.push(word);
+        }
+        // Join the words to form the full instruction word
+        const word = words.join("");
+
+        // 2. Decode instruction
+        const returnValue = decode_instruction("0x" + word);
+        if (returnValue.status === "error") {
+            // If decoding fails, return an error
+            draw.danger.push(status.execution_index);
+            status.execution_index = -1; // Set execution index to -1 to indicate error
+            return packExecute(
+                true,
+                "Error decoding instruction: " + returnValue.reason,
+                "danger",
+                draw,
+            );
+        }
+        instruction = returnValue.value;
+
+        asm = instruction.instructionExecPartsWithProperNames.join(" ");
+        machineCode = words.slice(0, instruction.nwords).join("");
+
+        // 3. Build instruction preload
+        preloadFunction = buildInstructionPreload(instruction);
+
+        // Store the newly fetched and decoded instruction in the cache if enabled
+        if (enableCache) {
+            instructionCache.set(pc_address, {
+                instruction,
+                asm,
+                machineCode,
+                preloadFunction,
+            });
+        }
+        // 4. Increment PC based on instruction size
+        incrementProgramCounter(instruction.nwords);
     }
-    // Join the words to form the full instruction word
-    const word = words.join("");
-
-    // 2. Decode instruction
-    const returnValue = decode_instruction("0x" + word);
-    if (returnValue.status === "error") {
-        // If decoding fails, return an error
-        draw.danger.push(status.execution_index);
-        status.execution_index = -1; // Set execution index to -1 to indicate error
-        return packExecute(
-            true,
-            "Error decoding instruction: " + returnValue.reason,
-            "danger",
-            draw
-        );
-    }
-    const instruction = returnValue.value;
-
-    const asm = instruction.instructionExecPartsWithProperNames.join(" ");
-    const machineCode = words.slice(0, instruction.nwords).join("");
-
-    const { type, nwords } = instruction;
-    // 3. Increment PC based on instruction size
-    incrementProgramCounter(nwords);
-
-    // 4. Build instruction preload
-    const preloadFunction = buildInstructionPreload(instruction);
 
     // 5. Execute instruction and handle PC changes
     const executeResult = executeInstructionAndHandlePC(draw, preloadFunction);
     if (executeResult !== null) {
         return executeResult;
     }
-
     // 6. Update execution statistics
-    updateStats(type, instruction.clk_cycles);
+    updateStats(instruction.type, instruction.clk_cycles);
 
     // Return instruction data for CLI display
     return {
