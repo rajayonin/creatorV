@@ -117,35 +117,6 @@ function initialize_execution() {
     }
     return null;
 }
-function handle_interruptions(draw) {
-    const i_reg = crex_findReg_bytag("event_cause");
-    if (i_reg.match === 0) {
-        return;
-    }
-
-    const i_reg_value = readRegister(i_reg.indexComp, i_reg.indexElem);
-    if (i_reg_value === 0) {
-        return;
-    }
-
-    logger.info("Interruption detected");
-    draw.warning.push(status.execution_index);
-
-    const epc_reg = crex_findReg_bytag("exception_program_counter");
-
-    // Save current PC to EPC
-    writeRegister(pc_reg_value, epc_reg.indexComp, epc_reg.indexElem);
-
-    // Jump to handler
-    const handler_address = 0;
-    setPC(handler_address);
-
-    // Update execution index
-    // get_execution_index(draw); TODO: This is used for the UI
-
-    // Clear interrupt
-    writeRegister(0, i_reg.indexComp, i_reg.indexElem);
-}
 
 function updateExecutionStatus(draw) {
     // Check for program termination due to error
@@ -391,9 +362,6 @@ function executeInstructionCycle(draw) {
 
     // Update execution index based on PC
     // get_execution_index(draw);
-
-    // Handle any pending interruptions
-    handle_interruptions(draw);
 
     // Process the current instruction
     const processingResult = processCurrentInstruction(draw);

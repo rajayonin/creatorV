@@ -169,7 +169,7 @@ export function track_stack_enter(function_name) {
     track_stack_limits.push(new_elto);
 
     // 3.- update UI
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && document.app) {
         document.app.$data.callee_subrutine =
             track_stack_names[track_stack_names.length - 1];
         document.app.$data.caller_subrutine =
@@ -206,7 +206,7 @@ export function track_stack_leave() {
 
     // draw stack zones
     const elto_top = track_stack_getTop();
-    if (typeof window !== "undefined" && elto_top.val !== null) {
+    if (typeof window !== "undefined" && document.app && elto_top.val !== null) {
         document.app.$data.callee_subrutine =
             track_stack_names[track_stack_names.length - 1];
         document.app.$data.caller_subrutine =
@@ -286,7 +286,7 @@ export function track_stack_getNames() {
 // Example: track_stack_setsp("0xFFFFFFF0") ;
 //
 export function track_stack_setsp(value) {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && document.app) {
         document.app.$data.end_callee = value; // llamado:  FFFFFFF0, FFFFFF00, FFFFF000
     }
 
@@ -371,7 +371,7 @@ export function track_stack_reset() {
     stack_hints = {}; // Clear hints
 
     // draw new limits
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && document.app) {
         document.app.$data.track_stack_names = track_stack_names;
         document.app.$data.callee_subrutine =
             track_stack_names[track_stack_names.length - 1];

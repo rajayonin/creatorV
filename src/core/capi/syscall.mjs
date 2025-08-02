@@ -96,7 +96,7 @@ export const SYSCALL = {
             `execute.syscall.read.${type}`,
         );
 
-        if (typeof document !== "undefined") {
+        if (typeof document !== "undefined" && document.app) {
             document.getElementById("enter_keyboard").scrollIntoView();
         }
         status.run_program = 3;

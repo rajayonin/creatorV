@@ -35,7 +35,7 @@ import {
   loadExample,
 } from "./utils.mjs"
 
-import { set_debug } from "@/core/core.mjs"
+import { set_debug, initCAPI } from "@/core/core.mjs"
 import { stats } from "@/core/executor/stats.mts"
 
 import { instructions } from "@/core/assembler/assembler.mjs"
@@ -298,6 +298,7 @@ export default {
     // set config
     this.set_dark_mode()
     set_debug(this.c_debug)
+    initCAPI()
 
     // listener for window size changes
     window.addEventListener("resize", this.resizeHandler)

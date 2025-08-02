@@ -1785,6 +1785,8 @@ async function main() {
         logger.disable();
     }
 
+    creator.initCAPI();
+
     TUTORIAL_MODE = argv.tutorial;
     // If we load a binary, we have to skip the compiler
     // Or if we use a compiler which isn't the default one
