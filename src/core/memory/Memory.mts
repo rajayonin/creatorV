@@ -183,7 +183,7 @@ export class Memory {
     private buffer!: ArrayBuffer;
 
     /** Typed array view for efficient access to the buffer */
-    public uint8View!: Uint8Array; // Public so that it can be read by Vue
+    private uint8View!: Uint8Array;
 
     /** Number of bytes that constitute a word */
     private wordSize!: number;
@@ -477,16 +477,25 @@ export class Memory {
      * ```
      */
     read(address: bigint): number {
-        const addr = Number(address);
-        if (addr >= this.size) {
-            throw new Error(`Address ${addr} exceeds memory size ${this.size}`);
+        // check address
+        if (address < this.baseAddress) {
+            throw new Error(
+                `Address ${address} is below base address ${this.baseAddress}`,
+            );
+        }
+
+        const addrIndex = Number(address - this.baseAddress);
+        if (addrIndex >= this.size) {
+            throw new Error(
+                `Address ${address} exceeds memory size ${this.size} (+${this.baseAddress}`,
+            );
         }
 
         if (this.bitsPerByte === 8) {
-            return this.uint8View[addr];
+            return this.uint8View[addrIndex];
         }
 
-        const bitOffset = addr * this.bitsPerByte;
+        const bitOffset = addrIndex * this.bitsPerByte;
         const byteIndex = Math.floor(bitOffset / 8);
         const bitIndex = bitOffset % 8;
 
@@ -553,9 +562,18 @@ export class Memory {
      * ```
      */
     write(address: bigint, value: number): void {
-        const addr = Number(address);
-        if (addr >= this.size) {
-            throw new Error(`Address ${addr} exceeds memory size ${this.size}`);
+        // check address
+        if (address < this.baseAddress) {
+            throw new Error(
+                `Address ${address} is below base address ${this.baseAddress}`,
+            );
+        }
+
+        const addrIndex = Number(address - this.baseAddress);
+        if (addrIndex >= this.size) {
+            throw new Error(
+                `Address ${address} exceeds memory size ${this.size} (+${this.baseAddress}`,
+            );
         }
         if (value > this.maxByteValue || value < 0) {
             throw new Error(
@@ -564,14 +582,14 @@ export class Memory {
         }
 
         // Track this address as written
-        this.writtenAddresses.add(addr);
+        this.writtenAddresses.add(Number(address));
 
         if (this.bitsPerByte === 8) {
-            this.uint8View[addr] = value;
+            this.uint8View[addrIndex] = value;
             return;
         }
 
-        const bitOffset = addr * this.bitsPerByte;
+        const bitOffset = addrIndex * this.bitsPerByte;
         const byteIndex = Math.floor(bitOffset / 8);
         const bitIndex = bitOffset % 8;
 
@@ -889,6 +907,15 @@ export class Memory {
     }
 
     /**
+     * Returns the total number of addressable units (bytes) in this memory configuration.
+     *
+     * @returns Addressable bytes
+     */
+    getSize(): number {
+        return this.size;
+    }
+
+    /**
      * Returns a copy of the endianness configuration array.
      * The returned array is a copy to prevent external modification.
      *
@@ -1096,16 +1123,23 @@ export class Memory {
      * ```
      */
     readWord(address: bigint): number[] {
-        const addr = Number(address);
-        if (addr + this.wordSize > this.size) {
+        // check address
+        if (address < this.baseAddress) {
             throw new Error(
-                `Word at address ${addr} with size ${this.wordSize} exceeds memory size ${this.size}`,
+                `Address ${address} is below base address ${this.baseAddress}`,
+            );
+        }
+
+        const addrIndex = Number(address - this.baseAddress);
+        if (addrIndex >= this.size) {
+            throw new Error(
+                `Address ${address} exceeds memory size ${this.size} (+${this.baseAddress}`,
             );
         }
 
         const bytes: number[] = [];
-        for (let i = 0; i < this.wordSize; i++) {
-            bytes.push(this.read(BigInt(addr + i)));
+        for (let i = 0n; i < this.wordSize; i++) {
+            bytes.push(this.read(address + i));
         }
 
         // Reorder bytes according to endianness
@@ -1160,10 +1194,17 @@ export class Memory {
      * ```
      */
     writeWord(address: bigint, word: number[]): void {
-        const addr = Number(address);
-        if (addr + this.wordSize > this.size) {
+        // check address
+        if (address < this.baseAddress) {
             throw new Error(
-                `Word at address ${addr} with size ${this.wordSize} exceeds memory size ${this.size}`,
+                `Address ${address} is below base address ${this.baseAddress}`,
+            );
+        }
+
+        const addrIndex = Number(address - this.baseAddress);
+        if (addrIndex >= this.size) {
+            throw new Error(
+                `Address ${address} exceeds memory size ${this.size} (+${this.baseAddress}`,
             );
         }
 
@@ -1189,8 +1230,8 @@ export class Memory {
             bytesToWrite[this.endianness[i]] = word[i];
         }
 
-        for (let i = 0; i < this.wordSize; i++) {
-            this.write(BigInt(addr + i), bytesToWrite[i]);
+        for (let i = 0n; i < this.wordSize; i++) {
+            this.write(address + i, bytesToWrite[Number(i)]);
         }
     }
 
@@ -1256,10 +1297,19 @@ export class Memory {
         operation: string,
         expectedSegment?: string,
     ): boolean {
+        // generic address check
+        if (
+            address < this.baseAddress ||
+            address - this.baseAddress >= this.size
+        ) {
+            return false;
+        }
+
+        // segment check
         const segment = this.getSegmentForAddress(address);
 
         if (!segment) {
-            return false; // Address not in any defined segment
+            return true;
         }
 
         if (expectedSegment && segment !== expectedSegment) {
