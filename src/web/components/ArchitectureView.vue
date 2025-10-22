@@ -23,7 +23,6 @@ import { defineComponent, type PropType } from "vue"
 
 import { architecture } from "@/core/core.mjs"
 
-import UIeltoToolbar from "./general/UIeltoToolbar.vue"
 import EditArchitecture from "./architecture/EditArchitecture.vue"
 import DownloadPopup from "./general/DownloadModal.vue"
 import ArchConf from "./architecture/configuration/ArchConf.vue"
@@ -43,7 +42,6 @@ export default defineComponent({
     arch_code: { type: String, required: true },
   },
   components: {
-    UIeltoToolbar,
     EditArchitecture,
     DownloadPopup,
     ArchConf,
@@ -64,14 +62,6 @@ export default defineComponent({
 <template>
   <b-container fluid align-h="center" id="architecture_menu">
     <!-- Navbar -->
-    <UIeltoToolbar
-      id="navbar_architecture"
-      components="btn_assembly,btn_simulator|btn_edit_architecture,btn_save_architecture||btn_configuration,btn_information"
-      :browser="browser"
-      :os="os"
-      :dark="dark"
-      :arch_available="arch_available"
-    />
 
     <!-- Edit architecture modal -->
     <EditArchitecture
