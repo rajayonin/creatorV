@@ -68,7 +68,7 @@ jobs:
       - name: Build cli binaries
         run: |
           bun run-p build:cli:windows build:cli:mac-x64 build:cli:mac-arm build:cli:linux-x64 build:cli:linux-arm
-          zip architectures.zip architecture/**/*.yml
+          zip architectures.zip architecture/*.yml architecture/**/*.yml
       - name: Upload cli binaries artifact
         uses: pyTooling/upload-artifact@v4
         with:
