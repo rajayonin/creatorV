@@ -76,7 +76,7 @@ jobs:
           working-directory: "."
           path: |
             creator-cli-*
-            architectures
+            architectures.zip
           if-no-files-found: error
           compression-level: 3
 
