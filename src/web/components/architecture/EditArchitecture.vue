@@ -32,7 +32,7 @@ import { yamlSchema } from "codemirror-json-schema/yaml"
 import { architecture, reset, loadArchitecture } from "@/core/core.mjs"
 import { show_notification, storeBackup } from "@/web/utils.mjs"
 
-import schema from "../../../../architecture/schema.json"
+import schema from "../../../../docs/schema/architecture.json"
 
 export default defineComponent({
   props: {

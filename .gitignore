@@ -37,3 +37,4 @@ out/
 vscode-extension/.vscode/*
 
 /creator6
+/creator-cli

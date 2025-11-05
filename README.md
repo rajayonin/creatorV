@@ -240,10 +240,11 @@
 <summary>:atom: 6.0.x:</summary>
 
   - [x] **BREAKING CHANGES**:
-     * New YAML architecture format (w/ [JSON schema](architecture/schema.json))
+     * New YAML architecture format (w/ [JSON schema](docs/schema/architecture.json))
   - [x] New functionality:
      * Interrupts and timers
      * Memory-mapped devices
+     * Validate programs in the CLI (`--validator`) (see [`docs/validator.md`](docs/validator.md))
   - [x] New architectures:
      * RISC-V 64
      * RISC-V 32 (w/ interrupts)

@@ -24,18 +24,22 @@ import { hideBin } from "yargs/helpers";
 import * as creator from "../core/core.mjs";
 import { step } from "../core/executor/executor.mjs";
 import { decode } from "../core/executor/decoder.mjs";
-import process from "node:process";
+import process, { exit } from "node:process";
 import { logger } from "../core/utils/creator_logger.mjs";
 import readline from "node:readline";
 import { instructions } from "../core/assembler/assembler.mjs";
 import { startTutorial } from "./tutorial.mts";
-import yaml from "js-yaml";
+import yaml, { YAMLException } from "js-yaml";
 import path from "node:path";
 import { displayHelp } from "./utils.mts";
 import { Buffer } from "node:buffer";
 import { sjasmplusAssemble } from "../core/assembler/sjasmplus/deno/sjasmplus.mjs";
 import { assembleCreator } from "../core/assembler/creatorAssembler/deno/creatorAssembler.mjs";
 import { rasmAssemble } from "../core/assembler/rasm/deno/rasm.mjs";
+import type { Architecture } from "@/core/core";
+import validatorSchema from "../../docs/schema/validator-file.json" with { type: "json" };
+import { validateSchema } from "@/core/utils/schema.mts";
+import { validate, type Validator } from "./validator.mts";
 
 const MAX_INSTRUCTIONS = 10000000000;
 const CLI_VERSION = "0.1.0";
@@ -71,7 +75,7 @@ interface ArgvOptions {
     assembly: string;
     compiler: string;
     debug: boolean;
-    reference: string;
+    validate: string;
     state: string;
     accessible: boolean;
     tutorial: boolean;
@@ -223,7 +227,7 @@ function applyAlias(
     // Combine alias args with original args (skipping the original command)
     const aliasArgs = aliasTokens.concat(args.slice(1));
 
-    return { cmd: aliasCmd, args: aliasArgs };
+    return { cmd: aliasCmd!, args: aliasArgs };
 }
 
 function clearConsole() {
@@ -285,7 +289,7 @@ function executeStep() {
 
 function loadArchitecture(filePath: string, isaExtensions: string[]) {
     const architectureFile = fs.readFileSync(filePath, "utf8");
-    const architectureObj = yaml.load(architectureFile);
+    const architectureObj = yaml.load(architectureFile) as Architecture;
     pluginName = architectureObj.config.plugin;
     const ret: ReturnType = creator.loadArchitecture(
         architectureFile,
@@ -536,10 +540,10 @@ function findInstructionByAddressOrLabel(
 
 function toggleBreakpoint(index: number) {
     // Toggle breakpoint
-    instructions[index].Break = !instructions[index].Break;
+    instructions[index]!.Break = !instructions[index]!.Break;
 
     // Get the instruction after toggling
-    const instr = instructions[index];
+    const instr = instructions[index]!;
     const status = instr.Break ? "set" : "removed";
 
     console.log(
@@ -557,7 +561,7 @@ function handleBreakpointCommand(args: string[]) {
     }
 
     // Try to find the instruction
-    const result = findInstructionByAddressOrLabel(args[1]);
+    const result = findInstructionByAddressOrLabel(args[1]!);
     if (!result) {
         return; // Error already logged in the find function
     }
@@ -578,7 +582,7 @@ function handlePauseCommand() {
 function handleRunCommand(args: string[], silent = false) {
     // Check if we have a number argument
     const instructionsToRun =
-        args.length > 1 ? parseInt(args[1], 10) : MAX_INSTRUCTIONS;
+        args.length > 1 ? parseInt(args[1]!, 10) : MAX_INSTRUCTIONS;
 
     // Make sure it's a valid number
     if (args.length > 1 && isNaN(instructionsToRun)) {
@@ -959,12 +963,12 @@ function displayRegistersByBank(regType: string, format: string = "raw") {
             const index = row * 4 + col;
             if (index < registerBank.elements.length) {
                 const reg = registerBank.elements[index];
-                const primaryName = reg.name[0];
-                const altNames = reg.name.slice(1).join(",");
+                const primaryName = reg!.name[0];
+                const altNames = reg!.name.slice(1).join(",");
                 const displayName = altNames
                     ? `${primaryName}(${altNames})`
                     : primaryName;
-                maxWidths[col] = Math.max(maxWidths[col], displayName.length);
+                maxWidths[col] = Math.max(maxWidths[col]!, displayName!.length);
             }
         }
     }
@@ -975,17 +979,17 @@ function displayRegistersByBank(regType: string, format: string = "raw") {
             const index = row * 4 + col;
             if (index < registerBank.elements.length) {
                 const reg = registerBank.elements[index];
-                const primaryName = reg.name[0];
-                const altNames = reg.name.slice(1).join(",");
+                const primaryName = reg!.name[0];
+                const altNames = reg!.name.slice(1).join(",");
 
                 // Get the register's bit width and calculate hex digits needed
-                const nbits = reg.nbits;
+                const nbits = reg!.nbits;
                 const hexDigits = Math.ceil(nbits / 4);
                 let value;
 
                 const rawValue = creator.dumpRegister(
                     primaryName,
-                    reg.type === "fp_registers" ? "raw" : "twoscomplement",
+                    reg!.type === "fp_registers" ? "raw" : "twoscomplement",
                 );
                 const floatValue = creator.dumpRegister(primaryName, "decimal");
 
@@ -1003,7 +1007,7 @@ function displayRegistersByBank(regType: string, format: string = "raw") {
                     : primaryName;
 
                 const coloredName = colorText(
-                    displayName.padEnd(maxWidths[col]),
+                    displayName!.padEnd(maxWidths[col]!),
                     "36",
                 );
                 line += `${col > 0 ? "  " : ""}${coloredName}: ${`${value}`}`;
@@ -1032,7 +1036,7 @@ function handleRegCommand(args: string[]) {
         return;
     }
 
-    const cmd = args[1].toLowerCase();
+    const cmd = args[1]!.toLowerCase();
     const format = args[2] || "raw";
 
     if (cmd === "list") {
@@ -1040,7 +1044,7 @@ function handleRegCommand(args: string[]) {
         displayRegisterTypes();
     } else {
         // This can either be a request for a specific register bank, or for a specific register
-        const regType = args[1].toLowerCase();
+        const regType = args[1]!.toLowerCase();
         const regTypes = creator.getRegisterTypes();
         if (regTypes.includes(regType)) {
             // Display registers of a specific type
@@ -1204,9 +1208,9 @@ function handleMemCommand(args: string[]) {
 
 function handleHexViewCommand(args: string[]) {
     if (args.length > 1) {
-        const address = parseInt(args[1], 16);
-        const count = args.length > 2 ? parseInt(args[2], 10) : 16;
-        const bytesPerLine = parseInt(args[3], 10) || 16;
+        const address = parseInt(args[1]!, 16);
+        const count = args.length > 2 ? parseInt(args[2]!, 10) : 16;
+        const bytesPerLine = parseInt(args[3]!, 10) || 16;
         console.log(creator.dumpMemory(address, count, bytesPerLine));
     } else {
         console.log("Usage: hexview <address> [count] [bytesPerLine]");
@@ -1217,10 +1221,10 @@ function getFrameColor(frameIndex: number, totalFrames: number): string {
     const colorCodes = ["32", "33", "36", "35", "34"]; // green, yellow, cyan, magenta, blue
 
     if (frameIndex === totalFrames - 1) {
-        return colorCodes[0]; // green for current/top frame
+        return colorCodes[0]!; // green for current/top frame
     }
 
-    return colorCodes[(frameIndex + 1) % colorCodes.length];
+    return colorCodes[(frameIndex + 1) % colorCodes.length]!;
 }
 
 // eslint-disable-next-line max-lines-per-function
@@ -1325,7 +1329,7 @@ function handleStackCommand(args: string[]) {
     }
 
     // If stack is very large, limit to a reasonable number of bytes
-    const maxBytesToShow = args.length > 2 ? parseInt(args[2], 10) : 256;
+    const maxBytesToShow = args.length > 2 ? parseInt(args[2]!, 10) : 256;
     const actualBytesToShow = stackEndAddress - startAddress;
 
     // If the actual stack is larger than our limit, reduce the end address
@@ -1508,10 +1512,9 @@ function parseArguments(): ArgvOptions {
             describe: "Enable debug mode",
             default: false,
         })
-        .option("reference", {
-            alias: "r",
+        .option("validate", {
             type: "string",
-            describe: "Reference file to load",
+            describe: "Validator file to load",
             default: "",
         })
         .option("state", {
@@ -1589,9 +1592,9 @@ function processCommand(cmd: string, args: string[]): boolean {
             if (args.length > 1) {
                 const arg = args[1];
                 if (arg === "--limit" && args.length > 2) {
-                    limit = parseInt(args[2], 10);
+                    limit = parseInt(args[2]!, 10);
                 } else if (!isNaN(Number(arg))) {
-                    limit = parseInt(arg, 10);
+                    limit = parseInt(arg!, 10);
                 }
             }
             handleInstructionsCommand(limit);
@@ -1704,7 +1707,7 @@ function interactiveMode() {
 
     rl.on("line", line => {
         const args = line.trim().split(/\s+/);
-        const cmd = args[0].toLowerCase();
+        const cmd = args[0]!.toLowerCase();
 
         try {
             if (processCommand(cmd, args)) {
@@ -1748,8 +1751,6 @@ function checkTerminalSize() {
 }
 
 async function main() {
-    // Check terminal size
-    checkTerminalSize();
     // Parse command line arguments
     const argv: ArgvOptions = parseArguments();
 
@@ -1795,6 +1796,54 @@ async function main() {
             await assemble(argv.assembly, argv.compiler);
         }
     }
+
+    // if validator, run
+    if (argv.validate) {
+        if (!argv.assembly) {
+            console.error("You must provide an assembly file (-s <file.s>).");
+            exit(1);
+        }
+
+        let validatorConfig;
+        try {
+            validatorConfig = yaml.load(
+                fs.readFileSync(argv.validate, "utf8"),
+            ) as Validator;
+        } catch (e: unknown) {
+            if (e instanceof YAMLException) {
+                console.error("Invalid YAML file.");
+                exit(1);
+            } else if (e instanceof Deno.errors.NotFound) {
+                console.error(`File '${argv.validate}' not found.`);
+                exit(1);
+            } else {
+                throw e;
+            }
+        }
+
+        // validate schema
+        if (!validateSchema(validatorConfig, validatorSchema)) {
+            console.error("Invalid schema for validator config file!");
+            exit(1);
+        }
+
+        const ret = validate(
+            validatorConfig.state,
+            validatorConfig.maxCycles,
+            validatorConfig.floatThreshold,
+            validatorConfig.sentinel,
+        );
+
+        if (ret.error) {
+            console.error(ret.msg);
+            exit(1);
+        }
+
+        return;
+    }
+
+    // Check terminal size
+    checkTerminalSize();
 
     clearConsole();
     if (!ACCESSIBLE) {

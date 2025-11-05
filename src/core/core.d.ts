@@ -21,6 +21,7 @@ type Register = {
     name: string[];
     nbits: number;
     value: bigint;
+    type: string;
     default_value: bigint;
     properties: string[];
 };

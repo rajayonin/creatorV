@@ -69,7 +69,7 @@ export default defineComponent({
     },
 
     archCodeWSchema() {
-      return `# yaml-language-server: $schema=${document.URL}architecture/schema.json\n${this.arch_code}`
+      return `# yaml-language-server: $schema=${document.URL}schema/architecture.json\n${this.arch_code}`
     },
   },
 })
