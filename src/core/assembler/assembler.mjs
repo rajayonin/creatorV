@@ -24,6 +24,7 @@ import { decode } from "../executor/decoder.mjs";
 import ansicolor from "ansicolor";
 import { resetStats } from "../executor/stats.mts";
 import { enableInterrupts } from "@/core/executor/interrupts.mts";
+import { reactive } from "vue";
 
 /*Instructions memory address*/
 export let address;
@@ -33,7 +34,7 @@ export function setAddress(address_) {
 /*Instructions memory*/
 
 /** @type {import("./assembler.d.ts").Instruction[]} */
-export const instructions = [];
+export const instructions = reactive([]);
 export function clear_instructions() {
     instructions.splice(0, instructions.length);
 }

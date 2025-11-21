@@ -30,6 +30,7 @@ export const CoreEventTypes = {
     SENTINEL_ERROR: "sentinel-error",
     LIBRARY_LOADED: "library-loaded",
     LIBRARY_REMOVED: "library-removed",
+    PAUSE_EXEC: "pause-execution",
 };
 
 /**
