@@ -395,7 +395,7 @@ var Module = (() => {
         if((instMatch[5] != "li" && instMatch[5] != "lui" && instMatch[5] != "la") ){
           for (var i = 0; i < callstack_convention[callstack_convention.length - 1].length; i++ ){
             (callstack_convention[callstack_convention.length - 1][i].name === instMatch[7] || callstack_convention[callstack_convention.length - 1][i].name === instMatch[8]) &&
-            (callstack_convention[callstack_convention.length - 1][i].can_operate === false) ? crex_show_notification("Possible failure in the parameter passing convention", "danger") : 0 ; 
+            (callstack_convention[callstack_convention.length - 1][i].can_operate === false) ? show_notification("Possible failure in the parameter passing convention", "danger") : 0 ; 
           }
             
             // callstack_convention[callstack_convention.length - 1].name 
@@ -466,13 +466,13 @@ var Module = (() => {
     Module['print'] = function (message) {
       // console.log(message);
       if (message === "Divergence execution detected: Aborted.")
-        crex_show_notification(message, "danger");
+        show_notification(message, "danger");
       if (message === "err call_convenction")
-        crex_show_notification("Possible failure in the parameter passing convention", "warning");
+        show_notification("Possible failure in the parameter passing convention", "warning");
       
       if (message === "May your execution has an infinity loop."){
         document.app.$data.execution_mode_run = 1;
-        crex_show_notification("May your execution has an infinity loop", "danger");
+        show_notification("May your execution has an infinity loop", "danger");
         instructions[hiden_executed]._rowVariant = "info";
         instructions[hiden_next_execute]._rowVariant = "success";
       }
@@ -643,7 +643,7 @@ var Module = (() => {
         // if (to_measure != ""){
         //   end = performance.now();
         //   var measure = end_m - start_m;
-        //   crex_show_notification("Execution time of " + to_measure + " :" + measure + " ms", "warning");
+        //   show_notification("Execution time of " + to_measure + " :" + measure + " ms", "warning");
         //   to_measure = "";
         // }
         // start = performance.now();
@@ -998,7 +998,7 @@ var Module = (() => {
 
     Module['printErr'] = function (message) {
       // if (message.includes("Execution:") || message.includes("Instructions:") || message.includes("Perf:"))
-      //   crex_show_notification(message, "success");
+      //   show_notification(message, "success");
       // else 
       console.warn(message);
     }
