@@ -49,7 +49,14 @@ import { resetDevices } from "./executor/devices.mts";
 import { compileTimerFunctions } from "./executor/timers.mts";
 import * as archProcessor from "./utils/architectureProcessor.mjs";
 import { writeDataDumpMemory32, writeDataDumpMemory64 } from "./assembler/sailAssembler/web/CNAssambler.mjs";
+import { ref } from "vue";
 
+
+// Button state
+export const reset_disable = ref(true);
+export const instruction_disable = ref(false);
+export const run_disable = ref(false);
+export const stop_disable = ref(true);
 
 /** @type {import("./core.d.ts").Library | import("./core.d.ts").LegacyLibrary} */
 export let loadedLibrary = {};

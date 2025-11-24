@@ -26,7 +26,11 @@ import {
   instructions_packed,
   reset as coreReset,
   getPC,
-  setPC
+  setPC,
+  reset_disable,
+  instruction_disable,
+  run_disable,
+  stop_disable,
 } from "@/core/core.mjs";
 import { sailexec, SailExecute } from "@/core/executor/sailSimRV/sailExecutor.mjs"
 import {
@@ -64,10 +68,10 @@ const props = defineProps({
 });
 
 // Button state
-const reset_disable = ref(true);
-const instruction_disable = ref(false);
-const run_disable = ref(false);
-const stop_disable = ref(true);
+// const reset_disable = ref(true);
+// const instruction_disable = ref(false);
+// const run_disable = ref(false);
+// const stop_disable = ref(true);
 
 // Computed properties
 const instruction_values = computed({

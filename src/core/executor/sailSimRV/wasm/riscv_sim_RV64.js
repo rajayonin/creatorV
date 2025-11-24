@@ -8,6 +8,7 @@ import { display_print } from "../../IO.mjs";
 import { SYSCALL } from "@/core/capi/syscall.mjs";
 import { coreEvents } from "@/core/events.mjs";
 import { show_notification } from "@/web/utils.mjs";
+import { reset_disable, instruction_disable, run_disable, stop_disable } from "@/core/core.mjs";
 
 var Module = (() => {
   var _scriptName = import.meta.url;
@@ -4342,8 +4343,18 @@ var Module = (() => {
           instructions[i]._rowVariant = '';
         }
         status.run_program = -1; // program finished
-        if (statusw !== 0)
+        if (statusw !== 0){
+          reset_disable.value = false;
+          instruction_disable.value = true;
+          run_disable.value = true;
+          stop_disable.value = false;
           show_notification("Your program has finished with errors.", "danger");
+        } else {
+          reset_disable.value = false;
+          instruction_disable.value = false;
+          run_disable.value = false;
+          stop_disable.value = true;
+        }
         var msg = `program exited (with status: ${statusw}), but keepRuntimeAlive() is set (counter=${runtimeKeepaliveCounter}) due to an async operation, so halting execution but not exiting the runtime or preventing further async execution (you can use emscripten_force_exit, if you want to force a true shutdown)`;
         readyPromiseReject(msg);
         err(msg);
