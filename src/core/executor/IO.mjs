@@ -1,23 +1,23 @@
 /**
- * Copyright 2018-2025 CREATOR Team.
+ *  Copyright 2018-2025 Felix Garcia Carballeira, Alejandro Calderon Mateos,
+ *                      Diego Camarmas Alonso
  *
- * This file is part of CREATOR.
+ *  This file is part of CREATOR.
  *
- * CREATOR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *  CREATOR is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * CREATOR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ *  CREATOR is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
-import { status, main_memory } from "../core.mjs";
+import { status, main_memory, architecture } from "../core.mjs";
 import {
     readRegister,
     writeRegister,
@@ -27,6 +27,7 @@ import { packExecute } from "../utils/utils.mjs";
 import os from "node:os";
 import { show_notification } from "@/web/utils.mjs";
 import { instructions } from "../assembler/assembler.mjs";
+import { sailexec } from "./sailSimRV/sailExecutor.mjs";
 
 export function display_print(info) {
     if (typeof document !== "undefined" && document.app) {
@@ -45,7 +46,13 @@ export function display_print(info) {
 
 export function kbd_read_char(keystroke, params) {
     const value = keystroke.charCodeAt(0);
-    writeRegister(value, params.indexComp, params.indexElem);
+    if (architecture.config.name.includes("SRV")) {
+        sailexec._send_char_to_C(value);
+
+        document.app.$data.execution_mode_run = document.app.$data.last_execution_mode_run;
+        document.app.$data.last_execution_mode_run = -1;    
+    }
+    writeRegister(BigInt(value), params.indexComp, params.indexElem);
 
     return value;
 }
@@ -61,14 +68,19 @@ export function kbd_read_int(keystroke, params) {
                 `Invalid input: '${keystroke}' is not an integer`,
                 "danger",
             );
-        } else {
-            throw new Error(
-                `\nInvalid input: '${keystroke}' is not an integer`,
-            );
+        }
+        else {
+            throw new Error(`\nInvalid input: '${keystroke}' is not an integer`);
         }
         return null;
-    }
+    } 
 
+    if (architecture.config.name.includes("SRV")) {
+        sailexec._send_int_to_C(value);
+
+        document.app.$data.execution_mode_run = document.app.$data.last_execution_mode_run;
+        document.app.$data.last_execution_mode_run = -1;    
+    }
     value = BigInt(value);
 
     writeRegister(value, params.indexComp, params.indexElem);
@@ -87,8 +99,19 @@ export function kbd_read_float(keystroke, params) {
         );
         return null;
     }
+    if (architecture.config.name.includes("SRV")) {
+        sailexec._send_float_to_C(value);
 
-    writeRegister(value, params.indexComp, params.indexElem);
+
+        document.app.$data.execution_mode_run = document.app.$data.last_execution_mode_run;
+        document.app.$data.last_execution_mode_run = -1;    
+    }
+
+    const buffer =  new ArrayBuffer(4);
+    const view = new DataView(buffer);
+    view.setFloat32(0,value, false);
+    const bits = view.getUint32(0, false);
+    writeRegister(BigInt(("0x" + bits.toString(16).padStart(8, "0"))), params.indexComp, params.indexElem);
 
     return value;
 }
@@ -105,6 +128,12 @@ export function kbd_read_double(keystroke, params) {
         return null;
     }
 
+    if (architecture.config.name.includes("SRV")) {
+        sailexec._send_double_to_C(value);
+
+        document.app.$data.execution_mode_run = document.app.$data.last_execution_mode_run;
+        document.app.$data.last_execution_mode_run = -1;      
+    }
     writeRegister(value, params.indexComp, params.indexElem, "DFP-Reg");
 
     return value;
@@ -119,6 +148,25 @@ export function kbd_read_string(keystroke, params) {
         main_memory.write(BigInt(addr + BigInt(i)), bytes[i]);
     }
 
+    if (architecture.config.name.includes("SRV")) {
+        var lengthBytes = sailexec.lengthBytesUTF8(keystroke) + 1;
+
+        var buffer = sailexec._malloc(lengthBytes);
+
+        sailexec.stringToUTF8(keystroke, buffer, lengthBytes);
+
+        if (architecture.config.name === "SRV32"){
+            sailexec._send_string_to_C(buffer);
+            sailexec._free(buffer);
+        }
+        else{
+            sailexec._send_string_to_C(BigInt(buffer));
+            sailexec._free(BigInt(buffer));
+        }
+
+        document.app.$data.execution_mode_run = document.app.$data.last_execution_mode_run;
+        document.app.$data.last_execution_mode_run = -1; 
+    }
     return keystroke;
 }
 
@@ -186,6 +234,7 @@ export function keyboard_read(fn_post_read, fn_post_params) {
         status.run_program = 0; // Reset run_program status
 
         return null;
+
     }
 
     // Web/UI mode
@@ -221,7 +270,8 @@ export function keyboard_read(fn_post_read, fn_post_params) {
             null,
         );
     }
-
+    if (architecture.config.name.includes("SRV"))
+        return draw;
     // If program was running before waiting for input, continue execution automatically
     if (status.run_program === 1) {
         // Trigger the play button to continue execution

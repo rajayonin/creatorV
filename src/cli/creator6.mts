@@ -36,6 +36,7 @@ import { Buffer } from "node:buffer";
 import { sjasmplusAssemble } from "../core/assembler/sjasmplus/deno/sjasmplus.mjs";
 import { assembleCreator } from "../core/assembler/creatorAssembler/deno/creatorAssembler.mjs";
 import { rasmAssemble } from "../core/assembler/rasm/deno/rasm.mjs";
+import { SailCompile } from "@/core/assembler/sailAssembler/web/CNAssambler.mjs";
 
 const MAX_INSTRUCTIONS = 10000000000;
 const CLI_VERSION = "0.1.0";
@@ -367,6 +368,7 @@ function loadLibrary(filePath: string) {
 }
 const assembler_map = {
     default: assembleCreator,
+    Sail: SailCompile,
     sjasmplus: sjasmplusAssemble,
     rasm: rasmAssemble,
 };

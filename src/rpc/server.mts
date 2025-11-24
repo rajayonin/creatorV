@@ -36,12 +36,14 @@ import { instructions } from "../core/assembler/assembler.mjs";
 import { sjasmplusAssemble } from "../core/assembler/sjasmplus/deno/sjasmplus.mjs";
 import { assembleCreator } from "../core/assembler/creatorAssembler/deno/creatorAssembler.mjs";
 import { rasmAssemble } from "../core/assembler/rasm/deno/rasm.mjs";
+import { SailCompile } from "@/core/assembler/sailAssembler/web/CNAssambler.mjs";
 import fs from "node:fs";
 import type { StackTracker } from "@/core/memory/StackTracker.mjs";
 
 // Compiler map similar to CLI version
 const assembler_map = {
     default: assembleCreator,
+    Sail: SailCompile,
     sjasmplus: sjasmplusAssemble,
     rasm: rasmAssemble,
 } as const;

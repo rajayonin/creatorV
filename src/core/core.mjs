@@ -48,6 +48,15 @@ import { init, compileArchitectureFunctions } from "./executor/executor.mjs";
 import { resetDevices } from "./executor/devices.mts";
 import { compileTimerFunctions } from "./executor/timers.mts";
 import * as archProcessor from "./utils/architectureProcessor.mjs";
+import { writeDataDumpMemory32, writeDataDumpMemory64 } from "./assembler/sailAssembler/web/CNAssambler.mjs";
+import { ref } from "vue";
+
+
+// Button state
+export const reset_disable = ref(true);
+export const instruction_disable = ref(false);
+export const run_disable = ref(false);
+export const stop_disable = ref(true);
 
 /** @type {import("./core.d.ts").Library | import("./core.d.ts").LegacyLibrary} */
 export let loadedLibrary = {};
@@ -325,6 +334,29 @@ export function reset() {
         main_memory.restore(main_memory_backup);
     }
 
+    if (architecture.config.name.includes("SRV")){
+        for (const instruction of instructions ?? []){
+            const auxAddr = parseInt(instruction.Address,16);
+            for (let j = 0; j < instruction.hex.length; j += 32) {
+                const wordBinary = instruction.hex.substr(j, 32);
+                const wordBytes = [];
+
+                // Split word into bytes
+                for (let k = 0; k < wordBinary.length; k += 8) {
+                    const byte = parseInt(wordBinary.substr(k, 8), 2);
+                    wordBytes.push(byte);
+                }
+
+                main_memory.writeWord(BigInt(auxAddr + j / 8), wordBytes);
+            }
+        }
+        if (architecture.config.name === "SRV32")
+            writeDataDumpMemory32();
+        else
+            writeDataDumpMemory64();
+
+    }
+    
     // Stack Reset
     stackTracker.reset();
     sentinel.reset();
