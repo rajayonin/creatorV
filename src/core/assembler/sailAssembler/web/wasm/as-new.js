@@ -5759,9 +5759,12 @@ function run(args) {
   Module["calledRun"] = true;
   if (ABORT) return;
   initRuntime();
-  FS.writeFile('./code.s', args);
+  for(var i = 2; i < args.length; i++) {
+    FS.writeFile('./code' + (i - 2) + '.s', args[i]);
+    args[i] = 'code' + (i - 2) + '.s';
+  }
   // console.log(FS.readdir("./"));
-  args = ["-o","out.o","-march=rv32imfdv", "-mabi=ilp32d","code.s"];
+  args = ["-o","out.o", ...args /*"-march=rv32imfdv", "-mabi=ilp32d", "code.s"*/];
   preMain();
   // readyPromiseResolve(Module);
   if (Module["onRuntimeInitialized"]) Module["onRuntimeInitialized"]();

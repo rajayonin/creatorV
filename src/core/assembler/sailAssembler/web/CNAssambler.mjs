@@ -10,14 +10,10 @@ import { writeMultiByteValueAsWords, instructions, setInstructions, setAddress }
 import as64Module from "./wasm/as-new64.js"
 import ld64Module from "./wasm/ld-new64.js"
 import dump64Module from "./wasm/objdump64.js"
-import {loadlinker} from "../CREATORNAssembler.mjs"
+import { vectorins, loadlinker} from "../CREATORNAssembler.mjs"
 import { architecture, setPC } from "../../../core.mjs";
 import { updateMainMemoryBackup, main_memory, WORDSIZE, BYTESIZE, backup_stack_address, backup_data_address } from "@/core/core.mjs";
-import { init } from "@/core/executor/executor.mjs";
-/* For 64 bits architecture */
-// import as64Module from "./wasm/as-new.js"
-// import ld64Module from "./wasm/ld-new.js"
-// import dump64Module from "./wasm/objdump.js"
+// import { init } from "@/core/executor/executor.mjs";
 
 let sailas, sailld, saildump = null;
 var list_data_instructions = [];
@@ -883,6 +879,7 @@ export async function as(code){
     /* Now we have to check which extensions are enabled during the process */
     var march = "-march=rv";
     var mabi = "-mabi=ilp";
+    var vectoren = false;
     if (architecture.config.name === "SRV32") {
       march = march + "32i";
       mabi = mabi + "32";
@@ -897,21 +894,29 @@ export async function as(code){
           case "F":
             march = march + "f";
             if(!mabi.includes("d"))
-              mabi = "ilp32f";
+              mabi = "-mabi=ilp32f";
           break;
           case "D":
             march = march + "d";
-            mabi = "ilp32d";
+            mabi = "-mabi=ilp32d";
           break;
           case "V":
             march = march + "v";
-            mabi = "ilp32d";
+            mabi = "-mabi=ilp32d";
           break;
         }
       }
+      for (const vext of vectorins ?? []) {
+        if (code.includes(vext) && !vectoren){
+          march = march + "v";
+          mabi = "-mabi=ilp32d";
+          vectoren = !vectoren;
+        }
+      }
+
     } else {
       march = march + "64i";
-      mabi = mabi + "64";
+      mabi = "-mabi=lp64";
       for(const ext of extensions ?? []){
         switch(ext){
           case "M":
@@ -923,25 +928,33 @@ export async function as(code){
           case "F":
             march = march + "f";
             if(!mabi.includes("d"))
-              mabi = "ilp64f";
+              mabi = "-mabi=lp64f";
           break;
           case "D":
             march = march + "d";
-            mabi = "ilp64d";
+            mabi = "-mabi=lp64d";
           break;
           case "V":
             march = march + "v";
-            mabi = "ilp64d";
+            mabi = "-mabi=lp64d";
           break;
+        }
+      }
+      for (const vext of vectorins ?? []) {
+        if (code.includes(vext) && !vectoren){
+          march = march + "v";
+          mabi = "-mabi=lp64d";
+          vectoren = !vectoren;
         }
       }
     }
     let asargs = [march, mabi, code];
+    console.log(asargs);
     let outfile = null;
     /* Once it is initialized we proceed to assemble code */
     /* Set arguments: extensions, input files, output name */
     // sailas.shouldRunNow = true;
-    outfile = await sailas.run(code);
+    outfile = await sailas.run(asargs);
     // outfile = ofile;
     // console.log(outfile);
     // sailas.callMain(["-o","out.o","-march=rv32imfdv", "-mabi=ilp32d","code.s"]);
@@ -1278,12 +1291,16 @@ export async function SailCompile(files, libs){
                     data_to_store.value = matchvalue[2].trim().split(",");
                   else
                     data_to_store.value = parseFloat(matchvalue[2]);
+                  if (extensions.findIndex(ext => "F".includes(ext)) === -1)
+                    extensions.push("F");
                   break;
                 case "double":
                   if (matchvalue[2].includes(","))
                     data_to_store.value = matchvalue[2].trim().split(",");
                   else
                     data_to_store.value = parseFloat(matchvalue[2]).toString(16);
+                  if (extensions.findIndex(ext => "D".includes(ext)) === -1)
+                    extensions.push("D");
                   break;
 
                 case "asciz":

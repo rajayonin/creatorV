@@ -7,6 +7,7 @@ import { setInstructions } from "@/core/assembler/assembler.mjs";
 import { display_print } from "../../IO.mjs";
 import { SYSCALL } from "@/core/capi/syscall.mjs";
 import { coreEvents } from "@/core/events.mjs";
+import { show_notification } from "@/web/utils.mjs";
 
 var Module = (() => {
   var _scriptDir = import.meta.url;
@@ -1762,7 +1763,6 @@ var Module = (() => {
       callRuntimeCallbacks(__ATMAIN__);
     }
     function exitRuntime() {
-      status.run_program = -1; // program finished
       Asyncify.state = Asyncify.State.Disabled;
       checkStackCookie();
       runtimeExited = true;
@@ -7834,7 +7834,8 @@ var Module = (() => {
             instructions[i]._rowVariant = '';
           }
           status.run_program = -1; // program finished
-
+          if (statusw !== 0)
+            show_notification("Your program has finished with errors.", "danger");
           var msg =
             "program exited (with status: " +
             statusw +

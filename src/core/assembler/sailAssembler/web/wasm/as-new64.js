@@ -4821,9 +4821,11 @@ function run(args = arguments_) {
     Module["calledRun"] = true;
     if (ABORT) return;
     initRuntime();
-    FS.writeFile('./code.s', args);
-    // console.log(FS.readdir("./"));
-    args = ["-o","out.o","-march=rv64imfdv", "-mabi=lp64d","code.s"];
+    for (var i = 2; i < args.length; i++){
+      FS.writeFile('./code' + (i - 2) + '.s', args[2]);
+      args[i] = 'code' + (i - 2) + '.s';
+    }
+    args = ["-o","out.o", ...args, /*"-march=rv64imfdv", "-mabi=lp64d", "code.s"*/];
     preMain();
     Module["onRuntimeInitialized"]?.();
     var noInitialRun = Module["noInitialRun"] || true;

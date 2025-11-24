@@ -7,6 +7,7 @@ import { setInstructions } from "@/core/assembler/assembler.mjs";
 import { display_print } from "../../IO.mjs";
 import { SYSCALL } from "@/core/capi/syscall.mjs";
 import { coreEvents } from "@/core/events.mjs";
+import { show_notification } from "@/web/utils.mjs";
 
 var Module = (() => {
   var _scriptName = import.meta.url;
@@ -4341,6 +4342,8 @@ var Module = (() => {
           instructions[i]._rowVariant = '';
         }
         status.run_program = -1; // program finished
+        if (statusw !== 0)
+          show_notification("Your program has finished with errors.", "danger");
         var msg = `program exited (with status: ${statusw}), but keepRuntimeAlive() is set (counter=${runtimeKeepaliveCounter}) due to an async operation, so halting execution but not exiting the runtime or preventing further async execution (you can use emscripten_force_exit, if you want to force a true shutdown)`;
         readyPromiseReject(msg);
         err(msg);
