@@ -23,9 +23,7 @@ along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 </template>
 
 <script>
-import { Terminal } from "xterm";
-import { FitAddon } from "@xterm/addon-fit";
-import "xterm/css/xterm.css";
+import { init, Terminal } from "ghostty-web";
 import { execution_mode, status } from "@/core/core.mjs";
 
 export default {
@@ -38,7 +36,6 @@ export default {
   data() {
     return {
       terminal: null,
-      fitAddon: null,
       inputBuffer: "",
       inputMode: false, // Whether we're waiting for user input
     };
@@ -49,12 +46,8 @@ export default {
   },
 
   beforeUnmount() {
-    // Remove window resize listener
-    window.removeEventListener("resize", this.handleResize);
-
     // Clear references
     this.terminal = null;
-    this.fitAddon = null;
   },
 
   watch: {
@@ -74,7 +67,7 @@ export default {
   },
 
   methods: {
-    initTerminal() {
+    async initTerminal() {
       // Check if container ref is available
       if (!this.$refs.terminalContainer) {
         console.warn("Terminal container not available");
@@ -82,6 +75,7 @@ export default {
       }
 
       try {
+        await init();
         this.terminal = new Terminal({
           cursorBlink: true,
           cursorStyle: "block",
@@ -121,21 +115,13 @@ export default {
           allowTransparency: true,
         });
 
-        // Add addons
-        this.fitAddon = new FitAddon();
-        this.terminal.loadAddon(this.fitAddon);
-
         // Open terminal in the container
         this.terminal.open(this.$refs.terminalContainer);
-        this.fitAddon.fit();
 
         // Handle input
         this.terminal.onData(data => {
           this.handleInput(data);
         });
-
-        // Handle window resize
-        window.addEventListener("resize", this.handleResize);
 
         // Write initial display content if any
         if (this.display) {
@@ -186,12 +172,6 @@ export default {
         this.inputBuffer = "";
         this.$root.keyboard = "";
         this.$root.display = "";
-      }
-    },
-
-    handleResize() {
-      if (this.fitAddon) {
-        this.fitAddon.fit();
       }
     },
 
